@@ -1,0 +1,48 @@
+{
+    "cli": true,
+    "adapterName": "omoda",
+    "title": "Omoda / Jaecoo",
+    "description": "Monitor and control Omoda / Jaecoo (Chery) vehicles: status, location, battery/charging, lock and climate.",
+    "keywords": [
+        "omoda",
+        "jaecoo",
+        "chery",
+        "vehicle",
+        "car",
+        "ev",
+        "telematics"
+    ],
+    "expert": "yes",
+    "features": [
+        "adapter"
+    ],
+    "type": "vehicle",
+    "startMode": "daemon",
+    "connectionType": "cloud",
+    "dataSource": "push",
+    "connectionIndicator": "yes",
+    "language": "TypeScript",
+    "adminUi": "json",
+    "tools": [
+        "ESLint",
+        "type checking"
+    ],
+    "eslintConfig": "official",
+    "i18n": "JSON",
+    "releaseScript": "yes",
+    "devServer": "no",
+    "indentation": "Space (4)",
+    "quotes": "single",
+    "authorName": "Alan Paris",
+    "authorGithub": "AlanSRU",
+    "authorEmail": "alan.paris@scottish.rugby",
+    "gitCommit": "no",
+    "gitRemoteProtocol": "HTTPS",
+    "defaultBranch": "main",
+    "license": "MIT License",
+    "dependabot": "no",
+    "nodeVersion": "20",
+    "replay": "/private/tmp/claude-501/-Users-AlanSRU-VenueManager-AVControl-iobroker-omoda/b50383ec-414a-42f0-b233-64b029314e01/scratchpad/.create-adapter.json",
+    "adminFeatures": [],
+    "creatorVersion": "3.1.5"
+}

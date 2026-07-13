@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/crypto/aes.ts"],
+  "sourcesContent": ["/*\n * AES/ECB/PKCS7 helper for the AJ-Captcha blockPuzzle handshake (core/captcha_solver.py).\n * The mode/padding are fixed by the captcha protocol (the server issues a per-request\n * secretKey and expects exactly this) \u2014 not our choice. ECB is protocol-mandated here.\n */\nimport { createCipheriv } from 'node:crypto';\n\n/**\n * base64( AES-ECB-PKCS7( plaintext, key ) ). Key length selects AES-128/192/256.\n *\n * @param plaintext\n * @param key\n */\nexport function aesEcbEncryptB64(plaintext: string, key: string): string {\n    const keyBuf = Buffer.from(key, 'utf-8');\n    const algo = keyBuf.length === 16 ? 'aes-128-ecb' : keyBuf.length === 24 ? 'aes-192-ecb' : 'aes-256-ecb';\n    // ECB uses no IV.\n    const cipher = createCipheriv(algo, keyBuf, null);\n    cipher.setAutoPadding(true); // PKCS#7\n    return Buffer.concat([cipher.update(Buffer.from(plaintext, 'utf-8')), cipher.final()]).toString('base64');\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAKA,yBAA+B;AAQxB,SAAS,iBAAiB,WAAmB,KAAqB;AACrE,QAAM,SAAS,OAAO,KAAK,KAAK,OAAO;AACvC,QAAM,OAAO,OAAO,WAAW,KAAK,gBAAgB,OAAO,WAAW,KAAK,gBAAgB;AAE3F,QAAM,aAAS,mCAAe,MAAM,QAAQ,IAAI;AAChD,SAAO,eAAe,IAAI;AAC1B,SAAO,OAAO,OAAO,CAAC,OAAO,OAAO,OAAO,KAAK,WAAW,OAAO,CAAC,GAAG,OAAO,MAAM,CAAC,CAAC,EAAE,SAAS,QAAQ;AAC5G;",
+  "names": []
+}

@@ -1,0 +1,125 @@
+{
+    "i18n": true,
+    "type": "tabs",
+    "items": {
+        "tabAccount": {
+            "type": "panel",
+            "label": "Account",
+            "items": {
+                "_disclaimer": {
+                    "type": "staticText",
+                    "text": "Unofficial, reverse-engineered adapter. Not affiliated with Omoda / Jaecoo / Chery. Use only on your own vehicle, at your own risk. Tip: use a delegated second account so the official app isn't logged out.",
+                    "style": { "fontStyle": "italic" },
+                    "sm": 12
+                },
+                "email": {
+                    "type": "text",
+                    "label": "Account email",
+                    "validatorErrorText": "Email is required",
+                    "sm": 12,
+                    "md": 6
+                },
+                "pin": {
+                    "type": "password",
+                    "label": "Command PIN",
+                    "help": "The account PIN used to authorise vehicle commands. A wrong PIN can lock the account — enter it carefully.",
+                    "sm": 12,
+                    "md": 6
+                }
+            }
+        },
+        "tabLogin": {
+            "type": "panel",
+            "label": "Login (OTP)",
+            "items": {
+                "_loginHelp": {
+                    "type": "staticText",
+                    "text": "1) Save your email above. 2) Press \"Request OTP code\" — a code is emailed to you. 3) Enter the code and press \"Confirm OTP\". A new OTP is only needed if the session dies (e.g. you opened the official app).",
+                    "sm": 12
+                },
+                "requestOtp": {
+                    "type": "sendTo",
+                    "command": "requestOtp",
+                    "jsonData": "{\"email\": \"${data.email}\"}",
+                    "label": "Request OTP code",
+                    "variant": "contained",
+                    "showProcess": true,
+                    "useNative": false,
+                    "sm": 12,
+                    "md": 4
+                },
+                "otpCode": {
+                    "type": "text",
+                    "label": "OTP code",
+                    "sm": 12,
+                    "md": 4
+                },
+                "confirmOtp": {
+                    "type": "sendTo",
+                    "command": "confirmOtp",
+                    "jsonData": "{\"email\": \"${data.email}\", \"code\": \"${data.otpCode}\"}",
+                    "label": "Confirm OTP",
+                    "variant": "contained",
+                    "showProcess": true,
+                    "useNative": false,
+                    "sm": 12,
+                    "md": 4
+                },
+                "checkSession": {
+                    "type": "sendTo",
+                    "command": "checkSession",
+                    "label": "Check session",
+                    "variant": "outlined",
+                    "showProcess": true,
+                    "useNative": false,
+                    "sm": 12,
+                    "md": 4
+                }
+            }
+        },
+        "tabAdvanced": {
+            "type": "panel",
+            "label": "Region & polling",
+            "items": {
+                "_regionHelp": {
+                    "type": "staticText",
+                    "text": "Defaults target Europe (also confirmed working for the UK). Only change these for other markets.",
+                    "sm": 12
+                },
+                "bff": { "type": "text", "label": "BFF host (API)", "sm": 12, "md": 6 },
+                "tspHost": { "type": "text", "label": "TSP console host", "sm": 12, "md": 6 },
+                "mqttHost": { "type": "text", "label": "Car MQTT host", "sm": 12, "md": 6 },
+                "mqttPort": { "type": "number", "label": "Car MQTT port", "min": 1, "max": 65535, "sm": 6, "md": 3 },
+                "tenant": { "type": "text", "label": "Tenant code", "sm": 6, "md": 3 },
+                "channelId": { "type": "text", "label": "Channel ID", "sm": 6, "md": 3 },
+                "countryId": { "type": "text", "label": "Country ID", "sm": 6, "md": 3 },
+                "deptId": { "type": "text", "label": "Dept ID", "sm": 6, "md": 3 },
+                "language": { "type": "text", "label": "Accept-Language", "sm": 6, "md": 3 },
+                "_pollHeader": { "type": "header", "text": "Polling", "size": 5, "sm": 12 },
+                "pollNormalMin": {
+                    "type": "number",
+                    "label": "Normal poll (minutes, 0 = off)",
+                    "help": "Wakes the car for fresh GPS/telemetry while parked. Every wake costs a little 12V power.",
+                    "min": 0,
+                    "sm": 12,
+                    "md": 4
+                },
+                "sessionEverySec": {
+                    "type": "number",
+                    "label": "Session keepalive (seconds)",
+                    "min": 60,
+                    "sm": 12,
+                    "md": 4
+                },
+                "wakeCooldownSec": {
+                    "type": "number",
+                    "label": "Wake cooldown (seconds)",
+                    "help": "Minimum time between wake requests — the backend rate-limits these.",
+                    "min": 60,
+                    "sm": 12,
+                    "md": 4
+                }
+            }
+        }
+    }
+}
