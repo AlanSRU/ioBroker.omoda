@@ -5,6 +5,8 @@ updates:
     schedule:
       interval: monthly
     open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
     ignore:
       # Defer major-version bumps of build/lint tooling — they routinely break
       # @iobroker/adapter-dev / eslint-config / ts-node and need manual migration.
@@ -16,6 +18,15 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@iobroker/eslint-config"
         update-types: ["version-update:semver-major"]
-  # No github-actions ecosystem: the ioBroker workflows pin floating major tags
-  # (e.g. ioBroker/testing-action-check@v1) which track upstream automatically,
-  # so dependabot would only ever propose disruptive major (@v1 -> @v2) bumps.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    ignore:
+      # The ioBroker testing actions are pinned to floating major tags (@v1) that
+      # track upstream automatically; defer disruptive major (@v1 -> @v2) bumps so
+      # the published-and-working OIDC deploy job is never changed unattended.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
