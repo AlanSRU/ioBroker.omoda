@@ -16,7 +16,6 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@iobroker/eslint-config"
         update-types: ["version-update:semver-major"]
-  - package-ecosystem: github-actions
-    directory: "/"
-    schedule:
-      interval: monthly
+  # No github-actions ecosystem: the ioBroker workflows pin floating major tags
+  # (e.g. ioBroker/testing-action-check@v1) which track upstream automatically,
+  # so dependabot would only ever propose disruptive major (@v1 -> @v2) bumps.

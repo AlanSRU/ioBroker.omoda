@@ -36,7 +36,7 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^3.4.1",
+    "@iobroker/adapter-core": "^3.4.3",
     "axios": "^1.18.1",
     "jimp": "^1.6.1",
     "mqtt": "^5.15.2"
