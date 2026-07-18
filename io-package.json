@@ -15,19 +15,6 @@
         "pl": "wydanie początkowe",
         "uk": "початковий випуск",
         "zh-cn": "初始版本"
-      },
-      "0.0.1": {
-        "en": "initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "Начальная версия",
-        "pt": "lançamento inicial",
-        "nl": "Eerste uitgave",
-        "fr": "Première version",
-        "it": "Versione iniziale",
-        "es": "Versión inicial",
-        "pl": "Pierwsze wydanie",
-        "uk": "Початкова версія",
-        "zh-cn": "首次出版"
       }
     },
     "titleLang": {
@@ -60,6 +47,7 @@
       "Alan Paris <alan.paris@scottish.rugby>"
     ],
     "keywords": [
+      "ioBroker",
       "omoda",
       "jaecoo",
       "chery",
@@ -85,12 +73,6 @@
     "messagebox": true,
     "connectionType": "cloud",
     "dataSource": "push",
-    "encryptedNative": [
-      "pin"
-    ],
-    "protectedNative": [
-      "pin"
-    ],
     "adminUI": {
       "config": "json"
     },
@@ -101,10 +83,17 @@
     ],
     "globalDependencies": [
       {
-        "admin": ">=7.0.23"
+        "admin": ">=7.6.17"
       }
     ]
   },
+  "encryptedNative": [
+    "pin"
+  ],
+  "protectedNative": [
+    "pin",
+    "otpCode"
+  ],
   "native": {
     "email": "",
     "pin": "",

@@ -71,7 +71,10 @@ class VehicleController {
    *
    * @param tuserId
    */
-  start(tuserId) {
+  async start(tuserId) {
+    if (this.mqtt || this.keepaliveTimer || this.normalTimer) {
+      await this.stop();
+    }
     this.stopped = false;
     this.mqtt = new import_telemetry.MqttTelemetry(
       {

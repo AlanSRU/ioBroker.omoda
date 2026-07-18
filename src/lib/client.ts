@@ -17,7 +17,7 @@ import { bffSign, marketingSign, marketingSignVals, tspAuthHeaders, tspSignBody,
 import { sm4Code } from './crypto/sm4';
 import type { Logger, RuntimeConfig, TspResult, Vehicle } from './types';
 import type { TokenStore } from './tokenStore';
-import { sanitizeId, str } from './util';
+import { mask, sanitizeId, str } from './util';
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
     return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -200,7 +200,9 @@ export class OmodaClient {
             if (!at) {
                 const code = isPlainObject(j) ? str(j.code ?? j.error ?? '') : '';
                 const msg = isPlainObject(j) ? str(j.msg ?? j.error_description ?? j.message ?? '') : '';
-                this.log.debug(`token refresh: no access_token (HTTP ${r.status}, code=${code || '—'}, msg=${msg || '—'})`);
+                this.log.debug(
+                    `token refresh: no access_token (HTTP ${r.status}, code=${code || '—'}, msg=${msg || '—'})`,
+                );
                 return false;
             }
             await this.tokens.save(j as Record<string, unknown>);
@@ -445,12 +447,13 @@ export class OmodaClient {
             // BFF success is code "0" (or "000000") / "Operation successful" — NOT the TSP code space.
             const ok = code === '0' || code === '000000' || code === '' || /success/i.test(msg);
             this.log.info(
-                `queryList probe: code=${code || '—'}, msg=${msg || '—'}, vehicles=${count}, data=${dataShape}. ` +
-                    (ok
+                `queryList probe: code=${code || '—'}, msg=${msg || '—'}, vehicles=${count}, data=${dataShape}. ${
+                    ok
                         ? count === 0
                             ? 'Token is VALID but NO vehicle is linked to this account — add/share a car to it first.'
                             : `Token is valid and ${count} vehicle(s) are visible.`
-                        : 'BFF rejected the access token — this is an account/token issue, not an empty garage.'),
+                        : 'BFF rejected the access token — this is an account/token issue, not an empty garage.'
+                }`,
             );
         } catch (e) {
             this.log.debug(`queryList probe failed: ${(e as Error).message}`);
@@ -514,7 +517,9 @@ export class OmodaClient {
         const vehicles = OmodaClient.iterVehicles(j)
             .map(it => OmodaClient.toVehicle(it))
             .filter((v): v is Vehicle => v !== null);
-        this.log.debug(`queryList discovered ${vehicles.length} vehicle(s): ${vehicles.map(v => v.vin).join(', ')}`);
+        this.log.debug(
+            `queryList discovered ${vehicles.length} vehicle(s): ${vehicles.map(v => mask(v.vin)).join(', ')}`,
+        );
         return vehicles;
     }
 }

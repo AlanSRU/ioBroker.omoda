@@ -18,6 +18,16 @@ export function sanitizeId(s: string): string {
     return s.replace(/[^a-zA-Z0-9_-]/g, '_');
 }
 
+/**
+ * Mask an identifier for logging — keeps only the last 4 chars, prefixed with `…`.
+ * Used so VIN / tUserId / MQTT-username never appear in cleartext logs while still
+ * giving enough of a suffix to correlate lines. Empty/short input → '…'.
+ */
+export function mask(s: string | null | undefined): string {
+    const v = str(s);
+    return v.length <= 4 ? '…' : `…${v.slice(-4)}`;
+}
+
 export function str(v: unknown): string {
     if (v === null || v === undefined) {
         return '';

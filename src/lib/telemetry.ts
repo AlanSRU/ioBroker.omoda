@@ -12,7 +12,7 @@ import mqtt, { type MqttClient } from 'mqtt';
 import { CAR_SEED } from './constants';
 import type { CertSet } from './certs';
 import type { Logger } from './types';
-import { str } from './util';
+import { mask, str } from './util';
 
 /** Command-confirmation meta-fields — NOT vehicle telemetry (coordinator.CMD_CONFIRM_META). */
 const CMD_CONFIRM_META = new Set(['result', 'resultTime', 'seq', 'reason', 'hasAsy']);
@@ -80,7 +80,9 @@ export class MqttTelemetry {
         } as mqtt.IClientOptions);
 
         client.on('connect', () => {
-            this.log.info(`[${tuserId}] car MQTT connected → subscribing ${topic}`);
+            // Never log the raw topic/tuserId — the topic embeds the tUserId (MQTT username,
+            // from which the MQTT password is derived). Mask it.
+            this.log.info(`[${mask(tuserId)}] car MQTT connected → subscribing account/msgCenter/msg`);
             this.handlers.onConnected(true);
             client.subscribe(topic, { qos: 1 }, err => {
                 if (err) {

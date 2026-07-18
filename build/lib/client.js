@@ -198,7 +198,9 @@ class OmodaClient {
       if (!at) {
         const code = isPlainObject(j) ? (0, import_util.str)((_c = (_b = j.code) != null ? _b : j.error) != null ? _c : "") : "";
         const msg = isPlainObject(j) ? (0, import_util.str)((_f = (_e = (_d = j.msg) != null ? _d : j.error_description) != null ? _e : j.message) != null ? _f : "") : "";
-        this.log.debug(`token refresh: no access_token (HTTP ${r.status}, code=${code || "\u2014"}, msg=${msg || "\u2014"})`);
+        this.log.debug(
+          `token refresh: no access_token (HTTP ${r.status}, code=${code || "\u2014"}, msg=${msg || "\u2014"})`
+        );
         return false;
       }
       await this.tokens.save(j);
@@ -404,7 +406,7 @@ class OmodaClient {
       const dataShape = isPlainObject(j.data) ? `object{${Object.keys(j.data).join(",")}}` : Array.isArray(j.data) ? `array[${j.data.length}]` : String(j.data);
       const ok = code === "0" || code === "000000" || code === "" || /success/i.test(msg);
       this.log.info(
-        `queryList probe: code=${code || "\u2014"}, msg=${msg || "\u2014"}, vehicles=${count}, data=${dataShape}. ` + (ok ? count === 0 ? "Token is VALID but NO vehicle is linked to this account \u2014 add/share a car to it first." : `Token is valid and ${count} vehicle(s) are visible.` : "BFF rejected the access token \u2014 this is an account/token issue, not an empty garage.")
+        `queryList probe: code=${code || "\u2014"}, msg=${msg || "\u2014"}, vehicles=${count}, data=${dataShape}. ${ok ? count === 0 ? "Token is VALID but NO vehicle is linked to this account \u2014 add/share a car to it first." : `Token is valid and ${count} vehicle(s) are visible.` : "BFF rejected the access token \u2014 this is an account/token issue, not an empty garage."}`
       );
     } catch (e) {
       this.log.debug(`queryList probe failed: ${e.message}`);
@@ -463,7 +465,9 @@ class OmodaClient {
     await this.bffLogin();
     const j = await this.bffPostJson(import_constants.EP.vmcList, {});
     const vehicles = OmodaClient.iterVehicles(j).map((it) => OmodaClient.toVehicle(it)).filter((v) => v !== null);
-    this.log.debug(`queryList discovered ${vehicles.length} vehicle(s): ${vehicles.map((v) => v.vin).join(", ")}`);
+    this.log.debug(
+      `queryList discovered ${vehicles.length} vehicle(s): ${vehicles.map((v) => (0, import_util.mask)(v.vin)).join(", ")}`
+    );
     return vehicles;
   }
 }

@@ -141,11 +141,11 @@ class Omoda extends utils.Adapter {
           ctrl = new import_controller.VehicleController(this, this.client, this.runtimeCfg, v, certs);
           this.controllers.set(v.id, ctrl);
         }
-        ctrl.start(tUserId);
+        await ctrl.start(tUserId);
         void this.setState(`${v.id}.info.sessionStatus`, { val: "Session active", ack: true });
       }
       void this.setState("info.connection", true, true);
-      this.log.info(`Started ${vehicles.length} vehicle(s): ${vehicles.map((v) => v.vin).join(", ")}`);
+      this.log.info(`Started ${vehicles.length} vehicle(s): ${vehicles.map((v) => (0, import_util.mask)(v.vin)).join(", ")}`);
     } catch (e) {
       this.log.error(`Startup failed: ${e.message}`);
     } finally {

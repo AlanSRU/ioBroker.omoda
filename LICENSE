@@ -2,6 +2,12 @@ MIT License
 
 Copyright (c) 2026 Alan Paris <alan.paris@scottish.rugby>
 
+Portions Copyright (c) 2026 Caslinovich and the omoda-jaecoo-ha contributors
+(JackRonan). This adapter ports reverse-engineered protocol constants, request-
+signing formulas, and endpoint recipes from the Home Assistant integration
+https://github.com/JackRonan/omoda-jaecoo-ha, which is distributed under the MIT
+License. That original notice is retained here as required by its terms.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights

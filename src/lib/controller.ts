@@ -70,7 +70,12 @@ export class VehicleController {
      *
      * @param tuserId
      */
-    start(tuserId: string): void {
+    async start(tuserId: string): Promise<void> {
+        // Idempotent: a re-login (confirmOtp after controllers already exist) calls start()
+        // again — tear down the previous MQTT client + timers first, or they leak.
+        if (this.mqtt || this.keepaliveTimer || this.normalTimer) {
+            await this.stop();
+        }
         this.stopped = false;
         this.mqtt = new MqttTelemetry(
             {

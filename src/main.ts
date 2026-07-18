@@ -13,7 +13,7 @@ import { solveCaptcha } from './lib/captcha';
 import { availableRegions, decryptRegion, loadStore, type CertSet } from './lib/certs';
 import { ensureObjects } from './lib/objects';
 import type { RuntimeConfig } from './lib/types';
-import { clamp, str } from './lib/util';
+import { clamp, mask, str } from './lib/util';
 
 class Omoda extends utils.Adapter {
     private client!: OmodaClient;
@@ -137,11 +137,11 @@ class Omoda extends utils.Adapter {
                     ctrl = new VehicleController(this, this.client, this.runtimeCfg, v, certs);
                     this.controllers.set(v.id, ctrl);
                 }
-                ctrl.start(tUserId);
+                await ctrl.start(tUserId);
                 void this.setState(`${v.id}.info.sessionStatus`, { val: 'Session active', ack: true });
             }
             void this.setState('info.connection', true, true);
-            this.log.info(`Started ${vehicles.length} vehicle(s): ${vehicles.map(v => v.vin).join(', ')}`);
+            this.log.info(`Started ${vehicles.length} vehicle(s): ${vehicles.map(v => mask(v.vin)).join(', ')}`);
         } catch (e) {
             this.log.error(`Startup failed: ${(e as Error).message}`);
         } finally {

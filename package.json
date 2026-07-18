@@ -6,10 +6,20 @@
     "name": "Alan Paris",
     "email": "alan.paris@scottish.rugby"
   },
-  "contributors": [],
+  "contributors": [
+    {
+      "name": "Caslinovich",
+      "url": "https://github.com/JackRonan/omoda-jaecoo-ha"
+    },
+    {
+      "name": "JackRonan",
+      "url": "https://github.com/JackRonan/omoda-jaecoo-ha"
+    }
+  ],
   "homepage": "https://github.com/AlanSRU/ioBroker.omoda",
   "license": "MIT",
   "keywords": [
+    "ioBroker",
     "omoda",
     "jaecoo",
     "chery",
@@ -23,7 +33,7 @@
     "url": "https://github.com/AlanSRU/ioBroker.omoda.git"
   },
   "engines": {
-    "node": ">= 20"
+    "node": ">=22"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.4.1",

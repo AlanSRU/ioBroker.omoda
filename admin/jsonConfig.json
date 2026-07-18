@@ -9,22 +9,34 @@
                 "_disclaimer": {
                     "type": "staticText",
                     "text": "Unofficial, reverse-engineered adapter. Not affiliated with Omoda / Jaecoo / Chery. Use only on your own vehicle, at your own risk. Tip: use a delegated second account so the official app isn't logged out.",
-                    "style": { "fontStyle": "italic" },
-                    "sm": 12
+                    "style": {
+                        "fontStyle": "italic"
+                    },
+                    "sm": 12,
+                    "xs": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 },
                 "email": {
                     "type": "text",
                     "label": "Account email",
                     "validatorErrorText": "Email is required",
                     "sm": 12,
-                    "md": 6
+                    "md": 6,
+                    "xs": 12,
+                    "lg": 6,
+                    "xl": 6
                 },
                 "pin": {
                     "type": "password",
                     "label": "Command PIN",
                     "help": "The account PIN used to authorise vehicle commands. A wrong PIN can lock the account — enter it carefully.",
                     "sm": 12,
-                    "md": 6
+                    "md": 6,
+                    "xs": 12,
+                    "lg": 6,
+                    "xl": 6
                 }
             }
         },
@@ -35,7 +47,11 @@
                 "_loginHelp": {
                     "type": "staticText",
                     "text": "1) Save your email above. 2) Press \"Request OTP code\" — a code is emailed to you. 3) Enter the code and press \"Confirm OTP\". A new OTP is only needed if the session dies (e.g. you opened the official app).",
-                    "sm": 12
+                    "sm": 12,
+                    "xs": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 },
                 "requestOtp": {
                     "type": "sendTo",
@@ -46,13 +62,19 @@
                     "showProcess": true,
                     "useNative": false,
                     "sm": 12,
-                    "md": 4
+                    "md": 4,
+                    "xs": 12,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "otpCode": {
                     "type": "text",
                     "label": "OTP code",
                     "sm": 12,
-                    "md": 4
+                    "md": 4,
+                    "xs": 12,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "confirmOtp": {
                     "type": "sendTo",
@@ -63,7 +85,10 @@
                     "showProcess": true,
                     "useNative": false,
                     "sm": 12,
-                    "md": 4
+                    "md": 4,
+                    "xs": 12,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "checkSession": {
                     "type": "sendTo",
@@ -73,7 +98,10 @@
                     "showProcess": true,
                     "useNative": false,
                     "sm": 12,
-                    "md": 4
+                    "md": 4,
+                    "xs": 12,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
@@ -84,32 +112,126 @@
                 "_regionHelp": {
                     "type": "staticText",
                     "text": "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (Italy=39 [default], France=33, Germany=49, UK=44, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.",
-                    "sm": 12
+                    "sm": 12,
+                    "xs": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 },
-                "bff": { "type": "text", "label": "BFF host (API)", "sm": 12, "md": 6 },
-                "tspHost": { "type": "text", "label": "TSP console host", "sm": 12, "md": 6 },
-                "mqttHost": { "type": "text", "label": "Car MQTT host", "sm": 12, "md": 6 },
-                "mqttPort": { "type": "number", "label": "Car MQTT port", "min": 1, "max": 65535, "sm": 6, "md": 3 },
-                "tenant": { "type": "text", "label": "Tenant code", "sm": 6, "md": 3 },
-                "channelId": { "type": "text", "label": "Channel ID", "sm": 6, "md": 3 },
-                "countryId": { "type": "text", "label": "Country ID", "sm": 6, "md": 3 },
-                "deptId": { "type": "text", "label": "Dept ID (country dialing code)", "help": "Your account country's phone prefix, e.g. IT=39, FR=33, DE=49, UK=44, NL=31.", "sm": 6, "md": 3 },
-                "language": { "type": "text", "label": "Accept-Language", "sm": 6, "md": 3 },
-                "_pollHeader": { "type": "header", "text": "Polling", "size": 5, "sm": 12 },
+                "bff": {
+                    "type": "text",
+                    "label": "BFF host (API)",
+                    "sm": 12,
+                    "md": 6,
+                    "xs": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "tspHost": {
+                    "type": "text",
+                    "label": "TSP console host",
+                    "sm": 12,
+                    "md": 6,
+                    "xs": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "mqttHost": {
+                    "type": "text",
+                    "label": "Car MQTT host",
+                    "sm": 12,
+                    "md": 6,
+                    "xs": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "mqttPort": {
+                    "type": "number",
+                    "label": "Car MQTT port",
+                    "min": 1,
+                    "max": 65535,
+                    "sm": 6,
+                    "md": 3,
+                    "xs": 12,
+                    "lg": 3,
+                    "xl": 3
+                },
+                "tenant": {
+                    "type": "text",
+                    "label": "Tenant code",
+                    "sm": 6,
+                    "md": 3,
+                    "xs": 12,
+                    "lg": 3,
+                    "xl": 3
+                },
+                "channelId": {
+                    "type": "text",
+                    "label": "Channel ID",
+                    "sm": 6,
+                    "md": 3,
+                    "xs": 12,
+                    "lg": 3,
+                    "xl": 3
+                },
+                "countryId": {
+                    "type": "text",
+                    "label": "Country ID",
+                    "sm": 6,
+                    "md": 3,
+                    "xs": 12,
+                    "lg": 3,
+                    "xl": 3
+                },
+                "deptId": {
+                    "type": "text",
+                    "label": "Dept ID (country dialing code)",
+                    "help": "Your account country's phone prefix, e.g. IT=39, FR=33, DE=49, UK=44, NL=31.",
+                    "sm": 6,
+                    "md": 3,
+                    "xs": 12,
+                    "lg": 3,
+                    "xl": 3
+                },
+                "language": {
+                    "type": "text",
+                    "label": "Accept-Language",
+                    "sm": 6,
+                    "md": 3,
+                    "xs": 12,
+                    "lg": 3,
+                    "xl": 3
+                },
+                "_pollHeader": {
+                    "type": "header",
+                    "text": "Polling",
+                    "size": 5,
+                    "sm": 12,
+                    "xs": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
                 "pollNormalMin": {
                     "type": "number",
                     "label": "Normal poll (minutes, 0 = off)",
                     "help": "Wakes the car for fresh GPS/telemetry while parked. Every wake costs a little 12V power.",
                     "min": 0,
                     "sm": 12,
-                    "md": 4
+                    "md": 4,
+                    "xs": 12,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "sessionEverySec": {
                     "type": "number",
                     "label": "Session keepalive (seconds)",
                     "min": 60,
                     "sm": 12,
-                    "md": 4
+                    "md": 4,
+                    "xs": 12,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "wakeCooldownSec": {
                     "type": "number",
@@ -117,7 +239,10 @@
                     "help": "Minimum time between wake requests — the backend rate-limits these.",
                     "min": 60,
                     "sm": 12,
-                    "md": 4
+                    "md": 4,
+                    "xs": 12,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         }

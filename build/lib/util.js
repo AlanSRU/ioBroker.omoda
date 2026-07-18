@@ -19,6 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var util_exports = {};
 __export(util_exports, {
   clamp: () => clamp,
+  mask: () => mask,
   sanitizeId: () => sanitizeId,
   str: () => str
 });
@@ -31,6 +32,10 @@ function clamp(v, min, max, fallback) {
 }
 function sanitizeId(s) {
   return s.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+function mask(s) {
+  const v = str(s);
+  return v.length <= 4 ? "\u2026" : `\u2026${v.slice(-4)}`;
 }
 function str(v) {
   if (v === null || v === void 0) {
@@ -47,6 +52,7 @@ function str(v) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   clamp,
+  mask,
   sanitizeId,
   str
 });

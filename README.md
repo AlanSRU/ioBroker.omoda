@@ -65,11 +65,29 @@ opened); otherwise the session is refreshed automatically.
   **driving or charging**, or after pressing **Refresh full status** (which briefly wakes the car).
 - Waking the car is **rate-limited** by the backend, so the adapter enforces a cooldown.
 
+## Credits
+
+This adapter is a port of the excellent reverse-engineering work in the Home Assistant
+integration **[omoda-jaecoo-ha](https://github.com/JackRonan/omoda-jaecoo-ha)** by
+**Caslinovich** and **JackRonan**. The protocol constants, request-signing formulas, MQTT
+credential derivation, and endpoint recipes were recovered by them and are used here under the
+MIT License — this project would not exist without their effort. Please star and support the
+upstream project. All bugs in this ioBroker port are mine, not theirs.
+
 ## Changelog
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+* (Alan Paris) Security: never log the VIN or MQTT user id in cleartext (masked to a short suffix)
+* (Alan Paris) Fixed a leak of the car MQTT client and polling timers when re-logging in after a session drop
+* (Alan Paris) Added credit to the upstream Home Assistant integration (JackRonan/omoda-jaecoo-ha) in the README and LICENSE
+* (Alan Paris) Added full admin UI translations for all 11 languages
+* (Alan Paris) Config: clearer "Dept ID" help — it must match your account country's dialing code (UK=44, IT=39, …)
+* (Alan Paris) Require Node.js >= 22 and admin >= 7.6.17; enabled automated npm publishing via trusted publishing (OIDC)
+* (Alan Paris) Marked the OTP code as protected; various adapter-checker compliance fixes
+
 ### 0.1.0 (2026-07-18)
 * (Alan Paris) initial release
 
@@ -77,6 +95,9 @@ opened); otherwise the session is refreshed automatically.
 MIT License
 
 Copyright (c) 2026 Alan Paris <alan.paris@scottish.rugby>
+
+Portions Copyright (c) 2026 Caslinovich and the omoda-jaecoo-ha contributors (JackRonan),
+ported from https://github.com/JackRonan/omoda-jaecoo-ha (MIT) and retained under its terms.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

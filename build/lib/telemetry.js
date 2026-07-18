@@ -74,7 +74,7 @@ class MqttTelemetry {
       checkServerIdentity: () => void 0
     });
     client.on("connect", () => {
-      this.log.info(`[${tuserId}] car MQTT connected \u2192 subscribing ${topic}`);
+      this.log.info(`[${(0, import_util.mask)(tuserId)}] car MQTT connected \u2192 subscribing account/msgCenter/msg`);
       this.handlers.onConnected(true);
       client.subscribe(topic, { qos: 1 }, (err) => {
         if (err) {
