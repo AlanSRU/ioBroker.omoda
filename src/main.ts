@@ -115,6 +115,9 @@ class Omoda extends utils.Adapter {
         try {
             const { userToken, tUserId } = await this.client.bffLogin();
             if (!userToken || !tUserId) {
+                // Probe queryList directly (Bearer access token, independent of the failed
+                // TSP userToken) to tell "empty garage" apart from "token/account rejected".
+                await this.client.probeQueryList();
                 this.log.warn('Session invalid — request a new OTP code in the adapter settings.');
                 return;
             }

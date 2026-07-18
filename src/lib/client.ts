@@ -140,15 +140,26 @@ export class OmodaClient {
         const j = r.data;
         const d = isPlainObject(j) && isPlainObject(j.data) ? j.data : null;
         if (!d) {
+            const code = isPlainObject(j) ? str(j.code ?? j.error ?? '') : '';
+            const msg = isPlainObject(j) ? str(j.msg ?? j.message ?? j.error_description ?? '') : '';
+            this.log.debug(
+                `bffLogin: no data (HTTP ${r.status}, code=${code || '—'}, msg=${msg || '—'}, ` +
+                    `hadAccessToken=${access ? 'yes' : 'no'}, willRefresh=${allowRefresh})`,
+            );
             if (allowRefresh && (await this.refreshToken(access))) {
                 return this.bffLogin(false);
             }
             return {};
         }
-        return {
-            userToken: typeof d.userToken === 'string' ? d.userToken : undefined,
-            tUserId: d.tUserId != null ? str(d.tUserId) : undefined,
-        };
+        const userToken = typeof d.userToken === 'string' ? d.userToken : undefined;
+        const tUserId = d.tUserId != null ? str(d.tUserId) : undefined;
+        if (!userToken || !tUserId) {
+            this.log.debug(
+                `bffLogin: data present but incomplete (userToken=${userToken ? 'yes' : 'no'}, ` +
+                    `tUserId=${tUserId ? 'yes' : 'no'}, dataKeys=${Object.keys(d).join(',')})`,
+            );
+        }
+        return { userToken, tUserId };
     }
 
     /**
@@ -187,6 +198,9 @@ export class OmodaClient {
                 ? (j.access_token ?? (isPlainObject(j.data) ? j.data.access_token : undefined))
                 : undefined;
             if (!at) {
+                const code = isPlainObject(j) ? str(j.code ?? j.error ?? '') : '';
+                const msg = isPlainObject(j) ? str(j.msg ?? j.error_description ?? j.message ?? '') : '';
+                this.log.debug(`token refresh: no access_token (HTTP ${r.status}, code=${code || '—'}, msg=${msg || '—'})`);
                 return false;
             }
             await this.tokens.save(j as Record<string, unknown>);
@@ -324,6 +338,10 @@ export class OmodaClient {
             : undefined;
         if (tok) {
             await this.tokens.save(j as Record<string, unknown>);
+            const d = isPlainObject(j) && isPlainObject(j.data) ? j.data : (j as Record<string, unknown>);
+            this.log.debug(
+                `mintToken: saved token (keys=${Object.keys(d).join(',')}, hasRefresh=${d.refresh_token ? 'yes' : 'no'})`,
+            );
             return { ok: true };
         }
         const detail = isPlainObject(j)
@@ -406,6 +424,37 @@ export class OmodaClient {
         const qs = new URLSearchParams(params).toString();
         const r = await this.http.post(`${this.cfg.bff}${EP.captchaCheck}?${qs}`, '', { headers });
         return isPlainObject(r.data) ? r.data : {};
+    }
+
+    /**
+     * Diagnostic: call queryList with just the Bearer access token (no TSP userToken) and
+     * log the outcome. Distinguishes an empty account (token valid, 0 vehicles) from a
+     * token/account rejection. Read-only; never touches the car.
+     */
+    async probeQueryList(): Promise<void> {
+        try {
+            const j = await this.bffPostJson(EP.vmcList, {});
+            const code = str(j.code ?? j.error ?? '');
+            const msg = str(j.msg ?? j.message ?? '');
+            const count = OmodaClient.iterVehicles(j).length;
+            const dataShape = isPlainObject(j.data)
+                ? `object{${Object.keys(j.data).join(',')}}`
+                : Array.isArray(j.data)
+                  ? `array[${j.data.length}]`
+                  : String(j.data);
+            // BFF success is code "0" (or "000000") / "Operation successful" — NOT the TSP code space.
+            const ok = code === '0' || code === '000000' || code === '' || /success/i.test(msg);
+            this.log.info(
+                `queryList probe: code=${code || '—'}, msg=${msg || '—'}, vehicles=${count}, data=${dataShape}. ` +
+                    (ok
+                        ? count === 0
+                            ? 'Token is VALID but NO vehicle is linked to this account — add/share a car to it first.'
+                            : `Token is valid and ${count} vehicle(s) are visible.`
+                        : 'BFF rejected the access token — this is an account/token issue, not an empty garage.'),
+            );
+        } catch (e) {
+            this.log.debug(`queryList probe failed: ${(e as Error).message}`);
+        }
     }
 
     // ── Vehicle discovery ────────────────────────────────────────────────────────

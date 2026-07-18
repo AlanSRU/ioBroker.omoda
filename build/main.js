@@ -121,6 +121,7 @@ class Omoda extends utils.Adapter {
     try {
       const { userToken, tUserId } = await this.client.bffLogin();
       if (!userToken || !tUserId) {
+        await this.client.probeQueryList();
         this.log.warn("Session invalid \u2014 request a new OTP code in the adapter settings.");
         return;
       }
