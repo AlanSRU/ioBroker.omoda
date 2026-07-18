@@ -79,7 +79,7 @@ upstream project. All bugs in this ioBroker port are mine, not theirs.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.1 (2026-07-18)
 * (Alan Paris) Security: never log the VIN or MQTT user id in cleartext (masked to a short suffix)
 * (Alan Paris) Fixed a leak of the car MQTT client and polling timers when re-logging in after a session drop
 * (Alan Paris) Added credit to the upstream Home Assistant integration (JackRonan/omoda-jaecoo-ha) in the README and LICENSE

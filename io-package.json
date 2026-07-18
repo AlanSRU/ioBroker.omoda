@@ -1,137 +1,150 @@
 {
-    "common": {
-        "name": "omoda",
-        "version": "0.1.0",
-        "news": {
-            "0.1.0": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "первоначальный релиз",
-                "pt": "lançamento inicial",
-                "nl": "eerste release",
-                "fr": "version initiale",
-                "it": "rilascio iniziale",
-                "es": "lanzamiento inicial",
-                "pl": "wydanie początkowe",
-                "uk": "початковий випуск",
-                "zh-cn": "初始版本"
-            }
-        },
-        "titleLang": {
-            "en": "Omoda / Jaecoo",
-            "de": "Omoda / Jaecoo",
-            "ru": "Омода / Джаэко",
-            "pt": "Omoda/Jaecoo",
-            "nl": "Omoda/Jaecoo",
-            "fr": "Omoda / Jaecoo",
-            "it": "Omoda/Jaecoo",
-            "es": "Omoda/Jaecoo",
-            "pl": "Omoda/Jaecoo",
-            "uk": "Омода / Джекоо",
-            "zh-cn": "奥莫达/杰科"
-        },
-        "desc": {
-            "en": "Monitor and control Omoda / Jaecoo (Chery) vehicles: status, location, battery/charging, lock and climate.",
-            "de": "Überwachen und steuern Sie Omoda/Jaecoo (Chery)-Fahrzeuge: Status, Standort, Batterie/Laden, Schloss und Klima.",
-            "ru": "Мониторинг и управление автомобилями Omoda/Jaecoo (Chery): статус, местоположение, аккумулятор/зарядка, блокировка и климат.",
-            "pt": "Monitore e controle veículos Omoda / Jaecoo (Chery): status, localização, bateria/carregamento, bloqueio e clima.",
-            "nl": "Bewaak en bestuur Omoda / Jaecoo (Chery) voertuigen: status, locatie, batterij/opladen, slot en klimaat.",
-            "fr": "Surveiller et contrôler les véhicules Omoda / Jaecoo (Chery) : état, emplacement, batterie/charge, verrouillage et climatisation.",
-            "it": "Monitora e controlla i veicoli Omoda / Jaecoo (Chery): stato, posizione, batteria/ricarica, blocco e clima.",
-            "es": "Monitorear y controlar vehículos Omoda / Jaecoo (Chery): estado, ubicación, batería/carga, bloqueo y clima.",
-            "pl": "Monitoruj i kontroluj pojazdy Omoda / Jaecoo (Chery): stan, lokalizacja, akumulator/ładowanie, zamek i klimat.",
-            "uk": "Контролюйте та контролюйте автомобілі Omoda / Jaecoo (Chery): стан, розташування, акумулятор/зарядка, блокування та клімат.",
-            "zh-cn": "监控和控制 Omoda / Jaecoo（奇瑞）车辆：状态、位置、电池/充电、锁和气候。"
-        },
-        "authors": [
-            "Alan Paris <alan.paris@scottish.rugby>"
-        ],
-        "keywords": [
-            "omoda",
-            "jaecoo",
-            "chery",
-            "vehicle",
-            "car",
-            "ev",
-            "telematics"
-        ],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "omoda.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/AlanSRU/ioBroker.omoda/main/admin/omoda.png",
-        "readme": "https://github.com/AlanSRU/ioBroker.omoda/blob/main/README.md",
-        "loglevel": "info",
-        "tier": 3,
-        "mode": "daemon",
-        "type": "vehicle",
-        "compact": true,
-        "messagebox": true,
-        "connectionType": "cloud",
-        "dataSource": "push",
-        "adminUI": {
-            "config": "json"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=6.0.11"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=7.6.20"
-            }
-        ]
+  "common": {
+    "name": "omoda",
+    "version": "0.1.1",
+    "news": {
+      "0.1.1": {
+        "en": "Security: never log the VIN or MQTT user id in cleartext (masked to a short suffix)\nFixed a leak of the car MQTT client and polling timers when re-logging in after a session drop\nAdded credit to the upstream Home Assistant integration (JackRonan/omoda-jaecoo-ha) in the README and LICENSE\nAdded full admin UI translations for all 11 languages\nConfig: clearer \"Dept ID\" help — it must match your account country's dialing code (UK=44, IT=39, …)\nRequire Node.js >= 22 and admin >= 7.6.17; enabled automated npm publishing via trusted publishing (OIDC)\nMarked the OTP code as protected; various adapter-checker compliance fixes",
+        "de": "Sicherheitshinweis: Die Fahrzeugidentifikationsnummer (VIN) oder die MQTT-Benutzerkennung dürfen niemals im Klartext protokolliert werden (nur mit einem kurzen Suffix maskiert).\nEin Sicherheitsleck des MQTT-Clients und der Abfragetimer des Fahrzeugs beim erneuten Anmelden nach einer Sitzungsunterbrechung wurde behoben.\nDie Upstream-Home-Assistant-Integration (JackRonan/omoda-jaecoo-ha) wurde in der README- und LICENSE-Datei als Quelle angegeben.\nVollständige Übersetzungen der Admin-Benutzeroberfläche für alle 11 Sprachen hinzugefügt.\nKonfiguration: Verdeutlichere Hilfe zur \"Abteilungs-ID\" – diese muss mit der Ländervorwahl Ihres Kontos übereinstimmen (UK=44, IT=39, …).\nErfordert Node.js >= 22 und admin >= 7.6.17; aktivierte automatische npm-Veröffentlichung über Trusted Publishing (OIDC)\nDer OTP-Code wurde als geschützt gekennzeichnet; diverse Kompatibilitätskorrekturen für Adapterprüfer wurden vorgenommen.",
+        "ru": "Безопасность: никогда не записывайте VIN или идентификатор пользователя MQTT в открытом виде (замаскированный коротким суффиксом).\nИсправлена утечка памяти в MQTT-клиенте автомобиля и таймерах опроса при повторном входе в систему после разрыва сессии.\nВ файлы README и LICENSE добавлена информация об авторе интеграции Home Assistant (JackRonan/omoda-jaecoo-ha).\nДобавлены полные переводы административного интерфейса на все 11 языков.\nНастройки: более понятная справка по \"Идентификатору отдела\" — он должен совпадать с кодом страны вашей учетной записи (Великобритания = 44, Италия = 39, …).\nТребуется Node.js >= 22 и admin >= 7.6.17; включена автоматическая публикация npm через доверенную публикацию (OIDC).\nКод OTP помечен как защищенный; внесены различные исправления в соответствие с требованиями адаптера.",
+        "pt": "Segurança: nunca registre o VIN ou o ID do usuário MQTT em texto não criptografado (use um sufixo curto para ocultar o valor).\nCorrigido um vazamento no cliente MQTT do carro e nos temporizadores de polling ao fazer login novamente após uma queda de sessão.\nAdicionados os créditos à integração upstream do Home Assistant (JackRonan/omoda-jaecoo-ha) no arquivo README e na licença.\nAdicionadas traduções completas da interface administrativa para todos os 11 idiomas.\nConfiguração: ajuda mais clara para o \"ID do Departamento\" — ele deve corresponder ao código de discagem do país da sua conta (Reino Unido=44, Itália=39, …)\nRequer Node.js >= 22 e admin >= 7.6.17; publicação automática do npm habilitada via publicação confiável (OIDC).\nCódigo OTP marcado como protegido; diversas correções de conformidade do verificador de adaptadores.",
+        "nl": "Beveiliging: registreer nooit het VIN-nummer of de MQTT-gebruikers-ID in platte tekst (verhuld met een kort achtervoegsel).\nEen lek in de MQTT-client voor auto's en de pollingtimers bij het opnieuw inloggen na een sessieonderbreking is verholpen.\nDe credits voor de Home Assistant-integratie (JackRonan/omoda-jaecoo-ha) zijn toegevoegd aan de README en LICENSE.\nVolledige vertalingen voor de beheerdersinterface zijn toegevoegd voor alle 11 talen.\nConfig: duidelijkere help voor \"Afdelings-ID\" — deze moet overeenkomen met het landnummer van uw account (VK=44, IT=39, …).\nNode.js >= 22 en admin >= 7.6.17 zijn vereist; geautomatiseerde npm-publicatie via vertrouwde publicatie (OIDC) is ingeschakeld.\nDe OTP-code is gemarkeerd als beveiligd; diverse oplossingen voor problemen met de adaptercontrole zijn doorgevoerd.",
+        "fr": "Sécurité : ne jamais enregistrer le VIN ou l'identifiant utilisateur MQTT en clair (masqués par un suffixe court).\nCorrection d'une fuite du client MQTT de la voiture et des minuteurs d'interrogation lors de la reconnexion après une déconnexion.\nAjout de la mention de l'intégration Home Assistant en amont (JackRonan/omoda-jaecoo-ha) dans le fichier README et la licence.\nAjout de traductions complètes de l'interface d'administration pour les 11 langues\nConfiguration : aide plus claire pour l’« ID du service » — celui-ci doit correspondre à l’indicatif téléphonique du pays de votre compte (Royaume-Uni = 44, Italie = 39, …).\nNode.js >= 22 et admin >= 7.6.17 requis ; publication npm automatisée activée via la publication de confiance (OIDC)\nCode OTP marqué comme protégé ; diverses corrections de conformité du vérificateur d’adaptateur",
+        "it": "Sicurezza: non registrare mai il VIN o l'ID utente MQTT in chiaro (mascherati con un suffisso breve).\nRisolto un problema di perdita di memoria del client MQTT dell'auto e dei timer di polling che si verificava al successivo accesso dopo un'interruzione di sessione.\nAggiunto il ringraziamento all'integrazione con Home Assistant (JackRonan/omoda-jaecoo-ha) nel file README e nel file LICENSE.\nAggiunta la traduzione completa dell'interfaccia utente di amministrazione per tutte le 11 lingue.\nConfigurazione: aiuto più chiaro per \"ID reparto\": deve corrispondere al prefisso internazionale del paese del tuo account (Regno Unito=44, Italia=39, …)\nRichiede Node.js >= 22 e admin >= 7.6.17; pubblicazione npm automatizzata abilitata tramite pubblicazione affidabile (OIDC)\nIl codice OTP è stato contrassegnato come protetto; diverse correzioni di conformità per il controllo dell'adattatore.",
+        "es": "Seguridad: nunca registre el VIN o el ID de usuario MQTT en texto plano (enmascarado con un sufijo corto).\nSe corrigió una fuga del cliente MQTT del automóvil y de los temporizadores de sondeo al volver a iniciar sesión después de una caída de sesión.\nSe ha añadido el crédito a la integración de Home Assistant (JackRonan/omoda-jaecoo-ha) en el archivo README y la licencia.\nSe agregaron traducciones completas de la interfaz de administración para los 11 idiomas.\nConfiguración: ayuda más clara para el \"ID de departamento\": debe coincidir con el código de marcación del país de su cuenta (RU=44, IT=39, …)\nRequiere Node.js >= 22 y admin >= 7.6.17; publicación automatizada de npm habilitada a través de publicación de confianza (OIDC).\nSe marcó el código OTP como protegido; varias correcciones de cumplimiento del verificador de adaptadores.",
+        "pl": "Bezpieczeństwo: nigdy nie rejestruj numeru VIN ani identyfikatora użytkownika MQTT w postaci zwykłego tekstu (zamaskowanego krótkim sufiksem)\nNaprawiono wyciek danych klienta MQTT i liczników sondowania podczas ponownego logowania po przerwaniu sesji\nDodano informacje o integracji z Home Assistant (JackRonan/omoda-jaecoo-ha) w plikach README i LICENCJI\nDodano pełne tłumaczenia interfejsu administratora dla wszystkich 11 języków\nKonfiguracja: bardziej przejrzysta pomoc dotycząca „ID działu” — musi być zgodny z kodem kierunkowym kraju, w którym jest zarejestrowane Twoje konto (UK=44, IT=39, …)\nWymagane Node.js ≥ 22 i administrator ≥ 7.6.17; włączono automatyczne publikowanie npm za pośrednictwem zaufanego publikowania (OIDC)\nOznaczono kod OTP jako chroniony; różne poprawki zgodności z programem sprawdzającym adaptery",
+        "uk": "Безпека: ніколи не реєструйте VIN або ідентифікатор користувача MQTT у відкритому тексті (замаскуваний коротким суфіксом)\nВиправлено витік MQTT-клієнта автомобіля та таймерів опитування під час повторного входу після переривання сеансу.\nДодано згадку про інтеграцію Home Assistant з головною версією (JackRonan/omoda-jaecoo-ha) у файлі README та ЛІЦЕНЗІЇ\nДодано повний переклад інтерфейсу адміністратора для всіх 11 мов\nКонфігурація: чіткіша довідка щодо «Ідентифікатора відділу» — він має відповідати коду країни вашого облікового запису (UK=44, IT=39 тощо)\nПотрібно Node.js >= 22 та admin >= 7.6.17; увімкнено автоматичну публікацію npm через довірену публікацію (OIDC)\nКод OTP позначено як захищений; різні виправлення відповідності перевірки адаптерів",
+        "zh-cn": "安全措施：绝不以明文形式记录车辆识别码 (VIN) 或 MQTT 用户 ID（应使用短后缀进行掩码处理）。\n修复了会话断开后重新登录时，车载 MQTT 客户端和轮询定时器的泄漏问题\n在 README 和 LICENSE 文件中添加了对上游 Home Assistant 集成（JackRonan/omoda-jaecoo-ha）的致谢。\n新增全部 11 种语言的完整管理界面翻译\n配置：更清晰的“部门 ID”帮助——它必须与您帐户所在国家/地区的拨号代码匹配（英国=44，意大利=39，……）\n需要 Node.js 版本 >= 22 和 admin 版本 >= 7.6.17；已启用通过可信发布 (OIDC) 实现的 npm 自动发布。\n已将 OTP 代码标记为受保护；修复了各种适配器检查器合规性问题"
+      },
+      "0.1.0": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "первоначальный релиз",
+        "pt": "lançamento inicial",
+        "nl": "eerste release",
+        "fr": "version initiale",
+        "it": "rilascio iniziale",
+        "es": "lanzamiento inicial",
+        "pl": "wydanie początkowe",
+        "uk": "початковий випуск",
+        "zh-cn": "初始版本"
+      }
     },
-    "encryptedNative": [
-        "pin"
-    ],
-    "protectedNative": [
-        "pin",
-        "otpCode"
-    ],
-    "native": {
-        "email": "",
-        "pin": "",
-        "otpCode": "",
-        "bff": "https://legend-oj.omodaauto.nl/api",
-        "tspHost": "https://tspconsole-eu.cheryinternational.com",
-        "mqttHost": "tspemqx-app-eu.cheryinternational.com",
-        "mqttPort": 8083,
-        "tenant": "300006",
-        "channelId": "1",
-        "countryId": "1",
-        "deptId": "39",
-        "language": "en-GB",
-        "pollNormalMin": 60,
-        "sessionEverySec": 900,
-        "wakeCooldownSec": 300
+    "titleLang": {
+      "en": "Omoda / Jaecoo",
+      "de": "Omoda / Jaecoo",
+      "ru": "Омода / Джаэко",
+      "pt": "Omoda/Jaecoo",
+      "nl": "Omoda/Jaecoo",
+      "fr": "Omoda / Jaecoo",
+      "it": "Omoda/Jaecoo",
+      "es": "Omoda/Jaecoo",
+      "pl": "Omoda/Jaecoo",
+      "uk": "Омода / Джекоо",
+      "zh-cn": "奥莫达/杰科"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Device or service connected",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
+    "desc": {
+      "en": "Monitor and control Omoda / Jaecoo (Chery) vehicles: status, location, battery/charging, lock and climate.",
+      "de": "Überwachen und steuern Sie Omoda/Jaecoo (Chery)-Fahrzeuge: Status, Standort, Batterie/Laden, Schloss und Klima.",
+      "ru": "Мониторинг и управление автомобилями Omoda/Jaecoo (Chery): статус, местоположение, аккумулятор/зарядка, блокировка и климат.",
+      "pt": "Monitore e controle veículos Omoda / Jaecoo (Chery): status, localização, bateria/carregamento, bloqueio e clima.",
+      "nl": "Bewaak en bestuur Omoda / Jaecoo (Chery) voertuigen: status, locatie, batterij/opladen, slot en klimaat.",
+      "fr": "Surveiller et contrôler les véhicules Omoda / Jaecoo (Chery) : état, emplacement, batterie/charge, verrouillage et climatisation.",
+      "it": "Monitora e controlla i veicoli Omoda / Jaecoo (Chery): stato, posizione, batteria/ricarica, blocco e clima.",
+      "es": "Monitorear y controlar vehículos Omoda / Jaecoo (Chery): estado, ubicación, batería/carga, bloqueo y clima.",
+      "pl": "Monitoruj i kontroluj pojazdy Omoda / Jaecoo (Chery): stan, lokalizacja, akumulator/ładowanie, zamek i klimat.",
+      "uk": "Контролюйте та контролюйте автомобілі Omoda / Jaecoo (Chery): стан, розташування, акумулятор/зарядка, блокування та клімат.",
+      "zh-cn": "监控和控制 Omoda / Jaecoo（奇瑞）车辆：状态、位置、电池/充电、锁和气候。"
+    },
+    "authors": [
+      "Alan Paris <alan.paris@scottish.rugby>"
+    ],
+    "keywords": [
+      "omoda",
+      "jaecoo",
+      "chery",
+      "vehicle",
+      "car",
+      "ev",
+      "telematics"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "omoda.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/AlanSRU/ioBroker.omoda/main/admin/omoda.png",
+    "readme": "https://github.com/AlanSRU/ioBroker.omoda/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "vehicle",
+    "compact": true,
+    "messagebox": true,
+    "connectionType": "cloud",
+    "dataSource": "push",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.6.20"
+      }
     ]
+  },
+  "encryptedNative": [
+    "pin"
+  ],
+  "protectedNative": [
+    "pin",
+    "otpCode"
+  ],
+  "native": {
+    "email": "",
+    "pin": "",
+    "otpCode": "",
+    "bff": "https://legend-oj.omodaauto.nl/api",
+    "tspHost": "https://tspconsole-eu.cheryinternational.com",
+    "mqttHost": "tspemqx-app-eu.cheryinternational.com",
+    "mqttPort": 8083,
+    "tenant": "300006",
+    "channelId": "1",
+    "countryId": "1",
+    "deptId": "39",
+    "language": "en-GB",
+    "pollNormalMin": 60,
+    "sessionEverySec": 900,
+    "wakeCooldownSec": 300
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Device or service connected",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }
