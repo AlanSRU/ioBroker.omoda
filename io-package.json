@@ -1,132 +1,149 @@
 {
-    "common": {
-        "name": "omoda",
-        "version": "0.0.1",
-        "news": {
-            "0.0.1": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "Начальная версия",
-                "pt": "lançamento inicial",
-                "nl": "Eerste uitgave",
-                "fr": "Première version",
-                "it": "Versione iniziale",
-                "es": "Versión inicial",
-                "pl": "Pierwsze wydanie",
-                "uk": "Початкова версія",
-                "zh-cn": "首次出版"
-            }
-        },
-        "titleLang": {
-            "en": "Omoda / Jaecoo",
-            "de": "Omoda / Jaecoo",
-            "ru": "Омода / Джаэко",
-            "pt": "Omoda/Jaecoo",
-            "nl": "Omoda/Jaecoo",
-            "fr": "Omoda / Jaecoo",
-            "it": "Omoda/Jaecoo",
-            "es": "Omoda/Jaecoo",
-            "pl": "Omoda/Jaecoo",
-            "uk": "Омода / Джекоо",
-            "zh-cn": "奥莫达/杰科"
-        },
-        "desc": {
-            "en": "Monitor and control Omoda / Jaecoo (Chery) vehicles: status, location, battery/charging, lock and climate.",
-            "de": "Überwachen und steuern Sie Omoda/Jaecoo (Chery)-Fahrzeuge: Status, Standort, Batterie/Laden, Schloss und Klima.",
-            "ru": "Мониторинг и управление автомобилями Omoda/Jaecoo (Chery): статус, местоположение, аккумулятор/зарядка, блокировка и климат.",
-            "pt": "Monitore e controle veículos Omoda / Jaecoo (Chery): status, localização, bateria/carregamento, bloqueio e clima.",
-            "nl": "Bewaak en bestuur Omoda / Jaecoo (Chery) voertuigen: status, locatie, batterij/opladen, slot en klimaat.",
-            "fr": "Surveiller et contrôler les véhicules Omoda / Jaecoo (Chery) : état, emplacement, batterie/charge, verrouillage et climatisation.",
-            "it": "Monitora e controlla i veicoli Omoda / Jaecoo (Chery): stato, posizione, batteria/ricarica, blocco e clima.",
-            "es": "Monitorear y controlar vehículos Omoda / Jaecoo (Chery): estado, ubicación, batería/carga, bloqueo y clima.",
-            "pl": "Monitoruj i kontroluj pojazdy Omoda / Jaecoo (Chery): stan, lokalizacja, akumulator/ładowanie, zamek i klimat.",
-            "uk": "Контролюйте та контролюйте автомобілі Omoda / Jaecoo (Chery): стан, розташування, акумулятор/зарядка, блокування та клімат.",
-            "zh-cn": "监控和控制 Omoda / Jaecoo（奇瑞）车辆：状态、位置、电池/充电、锁和气候。"
-        },
-        "authors": [
-            "Alan Paris <alan.paris@scottish.rugby>"
-        ],
-        "keywords": [
-            "omoda",
-            "jaecoo",
-            "chery",
-            "vehicle",
-            "car",
-            "ev",
-            "telematics"
-        ],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "omoda.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/AlanSRU/ioBroker.omoda/main/admin/omoda.png",
-        "readme": "https://github.com/AlanSRU/ioBroker.omoda/blob/main/README.md",
-        "loglevel": "info",
-        "tier": 3,
-        "mode": "daemon",
-        "type": "vehicle",
-        "compact": true,
-        "messagebox": true,
-        "connectionType": "cloud",
-        "dataSource": "push",
-        "encryptedNative": ["pin"],
-        "protectedNative": ["pin"],
-        "adminUI": {
-            "config": "json"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=6.0.11"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=7.0.23"
-            }
-        ]
+  "common": {
+    "name": "omoda",
+    "version": "0.1.0",
+    "news": {
+      "0.1.0": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "первоначальный релиз",
+        "pt": "lançamento inicial",
+        "nl": "eerste release",
+        "fr": "version initiale",
+        "it": "rilascio iniziale",
+        "es": "lanzamiento inicial",
+        "pl": "wydanie początkowe",
+        "uk": "початковий випуск",
+        "zh-cn": "初始版本"
+      },
+      "0.0.1": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "Начальная версия",
+        "pt": "lançamento inicial",
+        "nl": "Eerste uitgave",
+        "fr": "Première version",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsze wydanie",
+        "uk": "Початкова версія",
+        "zh-cn": "首次出版"
+      }
     },
-    "native": {
-        "email": "",
-        "pin": "",
-        "otpCode": "",
-        "bff": "https://legend-oj.omodaauto.nl/api",
-        "tspHost": "https://tspconsole-eu.cheryinternational.com",
-        "mqttHost": "tspemqx-app-eu.cheryinternational.com",
-        "mqttPort": 8083,
-        "tenant": "300006",
-        "channelId": "1",
-        "countryId": "1",
-        "deptId": "39",
-        "language": "en-GB",
-        "pollNormalMin": 60,
-        "sessionEverySec": 900,
-        "wakeCooldownSec": 300
+    "titleLang": {
+      "en": "Omoda / Jaecoo",
+      "de": "Omoda / Jaecoo",
+      "ru": "Омода / Джаэко",
+      "pt": "Omoda/Jaecoo",
+      "nl": "Omoda/Jaecoo",
+      "fr": "Omoda / Jaecoo",
+      "it": "Omoda/Jaecoo",
+      "es": "Omoda/Jaecoo",
+      "pl": "Omoda/Jaecoo",
+      "uk": "Омода / Джекоо",
+      "zh-cn": "奥莫达/杰科"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Device or service connected",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
+    "desc": {
+      "en": "Monitor and control Omoda / Jaecoo (Chery) vehicles: status, location, battery/charging, lock and climate.",
+      "de": "Überwachen und steuern Sie Omoda/Jaecoo (Chery)-Fahrzeuge: Status, Standort, Batterie/Laden, Schloss und Klima.",
+      "ru": "Мониторинг и управление автомобилями Omoda/Jaecoo (Chery): статус, местоположение, аккумулятор/зарядка, блокировка и климат.",
+      "pt": "Monitore e controle veículos Omoda / Jaecoo (Chery): status, localização, bateria/carregamento, bloqueio e clima.",
+      "nl": "Bewaak en bestuur Omoda / Jaecoo (Chery) voertuigen: status, locatie, batterij/opladen, slot en klimaat.",
+      "fr": "Surveiller et contrôler les véhicules Omoda / Jaecoo (Chery) : état, emplacement, batterie/charge, verrouillage et climatisation.",
+      "it": "Monitora e controlla i veicoli Omoda / Jaecoo (Chery): stato, posizione, batteria/ricarica, blocco e clima.",
+      "es": "Monitorear y controlar vehículos Omoda / Jaecoo (Chery): estado, ubicación, batería/carga, bloqueo y clima.",
+      "pl": "Monitoruj i kontroluj pojazdy Omoda / Jaecoo (Chery): stan, lokalizacja, akumulator/ładowanie, zamek i klimat.",
+      "uk": "Контролюйте та контролюйте автомобілі Omoda / Jaecoo (Chery): стан, розташування, акумулятор/зарядка, блокування та клімат.",
+      "zh-cn": "监控和控制 Omoda / Jaecoo（奇瑞）车辆：状态、位置、电池/充电、锁和气候。"
+    },
+    "authors": [
+      "Alan Paris <alan.paris@scottish.rugby>"
+    ],
+    "keywords": [
+      "omoda",
+      "jaecoo",
+      "chery",
+      "vehicle",
+      "car",
+      "ev",
+      "telematics"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "omoda.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/AlanSRU/ioBroker.omoda/main/admin/omoda.png",
+    "readme": "https://github.com/AlanSRU/ioBroker.omoda/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "vehicle",
+    "compact": true,
+    "messagebox": true,
+    "connectionType": "cloud",
+    "dataSource": "push",
+    "encryptedNative": [
+      "pin"
+    ],
+    "protectedNative": [
+      "pin"
+    ],
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.0.23"
+      }
     ]
+  },
+  "native": {
+    "email": "",
+    "pin": "",
+    "otpCode": "",
+    "bff": "https://legend-oj.omodaauto.nl/api",
+    "tspHost": "https://tspconsole-eu.cheryinternational.com",
+    "mqttHost": "tspemqx-app-eu.cheryinternational.com",
+    "mqttPort": 8083,
+    "tenant": "300006",
+    "channelId": "1",
+    "countryId": "1",
+    "deptId": "39",
+    "language": "en-GB",
+    "pollNormalMin": 60,
+    "sessionEverySec": 900,
+    "wakeCooldownSec": 300
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Device or service connected",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }

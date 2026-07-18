@@ -70,8 +70,7 @@ opened); otherwise the session is refreshed automatically.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.1.0 (2026-07-18)
 * (Alan Paris) initial release
 
 ## License
