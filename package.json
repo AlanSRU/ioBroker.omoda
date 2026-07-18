@@ -30,7 +30,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/AlanSRU/ioBroker.omoda.git"
+    "url": "git+https://github.com/AlanSRU/ioBroker.omoda.git"
   },
   "engines": {
     "node": ">=22"
