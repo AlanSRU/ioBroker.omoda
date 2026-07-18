@@ -3,7 +3,7 @@ import { sm4EncryptBlock, sm4EcbEncryptPkcs7, sm4Code } from './sm4';
 import { bffSign, marketingSign, marketingSignVals, tspBuildSign, tspSignBody, TSP_HALF } from './sign';
 import { aesEcbEncryptB64 } from './aes';
 import { SM4_KEY } from '../constants';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 
 describe('crypto/sm4', () => {
     it('matches the GM/T 0002-2012 standard test vector', () => {
