@@ -17,6 +17,9 @@ Thumbs.db
 admin/i18n/flat.txt
 admin/i18n/*/flat.txt
 
+# @iobroker/dev-server working directory (local-only, never commit)
+.dev-server/
+
 # Local-only dev notes (never commit)
 CLAUDE.md
 **/CLAUDE.md

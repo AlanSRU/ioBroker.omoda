@@ -1,0 +1,11 @@
+# Auto-merge policy for Dependabot PRs.
+# Consumed by .github/workflows/automerge-dependabot.yml (iobroker-bot-orga/action-automerge-dependabot).
+# update_type is hierarchical: "semver:minor" also includes patch. Majors are never auto-merged.
+- match:
+    # Production dependencies: auto-merge patch updates only
+    dependency_type: production
+    update_type: 'semver:patch'
+- match:
+    # Development dependencies: auto-merge patch and minor updates
+    dependency_type: development
+    update_type: 'semver:minor'
