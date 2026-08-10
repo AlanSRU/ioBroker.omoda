@@ -34,10 +34,6 @@ export class TokenStore {
         this.file = path.join(dataDir, 'token.json');
     }
 
-    get filePath(): string {
-        return this.file;
-    }
-
     /** Load token.json from disk into memory. Safe to call repeatedly. */
     async load(): Promise<TokenDoc | null> {
         try {
@@ -63,15 +59,6 @@ export class TokenStore {
         await fs.rename(tmp, this.file);
     }
 
-    async clear(): Promise<void> {
-        this.doc = null;
-        try {
-            await fs.unlink(this.file);
-        } catch {
-            /* already gone */
-        }
-    }
-
     hasToken(): boolean {
         return !!pick(this.doc, 'access_token');
     }
@@ -82,11 +69,5 @@ export class TokenStore {
 
     getRefreshToken(): string | undefined {
         return pick(this.doc, 'refresh_token');
-    }
-
-    /** Re-read the file and return the current access token (for the refresh double-check race). */
-    async currentAccessTokenFromDisk(): Promise<string | undefined> {
-        await this.load();
-        return this.getAccessToken();
     }
 }

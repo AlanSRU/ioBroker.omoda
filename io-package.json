@@ -100,7 +100,8 @@
     ]
   },
   "encryptedNative": [
-    "pin"
+    "pin",
+    "otpCode"
   ],
   "protectedNative": [
     "email",

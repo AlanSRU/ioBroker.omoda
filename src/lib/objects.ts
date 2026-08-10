@@ -9,6 +9,7 @@
  * writable state has a role with write=true and a handler in main.onStateChange.
  */
 import type { Vehicle } from './types';
+import { str } from './util';
 
 type StateCommon = ioBroker.StateCommon;
 
@@ -72,8 +73,12 @@ export const STATES: StateDef[] = [
     },
     { id: 'location.speed', common: { name: 'Speed', type: 'number', role: 'value.speed', unit: 'km/h', ...ro() } },
     {
+        // NOT value.direction: the spec defines that as an enum (0 nothing / 1 up-opening /
+        // 2 down-closing / 3 undefined) for blinds and 4-way switches, so a 0-359° compass
+        // bearing rendered by a role-aware widget would come out as "undefined". The spec has no
+        // compass role, so this falls back to the generic value role.
         id: 'location.heading',
-        common: { name: 'Heading', type: 'number', role: 'value.direction', unit: '°', ...ro() },
+        common: { name: 'Heading', type: 'number', role: 'value', unit: '°', ...ro() },
     },
     {
         id: 'location.positionTime',
@@ -215,9 +220,13 @@ export const STATES: StateDef[] = [
         },
     },
     {
+        // switch.lock is defined the other way round to what you might expect: the ioBroker
+        // stateroles spec says "true - open lock, false - close lock". Keeping our own polarity
+        // here would make ioBroker.iot / VIS lock widgets / type-detector unlock the car when the
+        // user asks to lock it, so the state follows the spec: TRUE UNLOCKS.
         id: 'commands.lock',
         common: {
-            name: 'Lock (true) / unlock (false)',
+            name: 'Lock: true = unlock (open), false = lock (closed)',
             type: 'boolean',
             role: 'switch.lock',
             read: true,
@@ -243,14 +252,25 @@ export const STATES: StateDef[] = [
 // ── Telemetry field maps ─────────────────────────────────────────────────────────────
 type Conv = (raw: unknown) => ioBroker.StateValue | undefined;
 
-const boolNonZero: Conv = v => {
-    const n = Number(v);
-    return Number.isNaN(n) ? undefined : n !== 0;
-};
-const num: Conv = v => {
+/**
+ * Number() maps both `null` and `''` to 0, which would turn "the car told us nothing" into a real
+ * reading — a locked door, a 0 km odometer, latitude 0 off the coast of Africa. MQTT fields are
+ * stringified before they reach a converter (telemetry.onMessage), so a null has already become
+ * `''` by then; both forms have to be rejected here, at the single point every map goes through.
+ */
+const toNumStrict = (v: unknown): number | undefined => {
+    if (v == null || (typeof v === 'string' && v.trim() === '')) {
+        return undefined;
+    }
     const n = Number(v);
     return Number.isNaN(n) ? undefined : n;
 };
+
+const boolNonZero: Conv = v => {
+    const n = toNumStrict(v);
+    return n === undefined ? undefined : n !== 0;
+};
+const num: Conv = v => toNumStrict(v);
 
 interface FieldTarget {
     id: string;
@@ -272,7 +292,13 @@ export const MQTT_MAP: Record<string, FieldTarget> = {
     trunkDoor: { id: 'doors.trunk', conv: boolNonZero },
     hood: { id: 'doors.hood', conv: boolNonZero },
     // doorLock: 0 = Locked, 1 = Unlocked (HA "lock" kind) → locked = (val == 0)
-    doorLock: { id: 'doors.locked', conv: v => (v == null ? undefined : Number(v) === 0) },
+    doorLock: {
+        id: 'doors.locked',
+        conv: v => {
+            const n = toNumStrict(v);
+            return n === undefined ? undefined : n === 0;
+        },
+    },
     frontLeftWindowState: { id: 'windows.frontLeft', conv: boolNonZero },
     frontRightWindowState: { id: 'windows.frontRight', conv: boolNonZero },
     backLeftWindowState: { id: 'windows.rearLeft', conv: boolNonZero },
@@ -292,7 +318,14 @@ export const RT_MAP: Record<string, FieldTarget> = {
     dynamicPureElectricRange: { id: 'battery.rangeElectric', conv: num },
     odometer: { id: 'status.odometer', conv: num },
     vehicleSpeed: { id: 'location.speed', conv: num },
-    chargeState: { id: 'charging.state', conv: v => CHARGE_STATE_MAP[String(v)] ?? String(v) },
+    chargeState: {
+        id: 'charging.state',
+        // str() rejects objects/symbols/functions safely; '' then means "not reported".
+        conv: v => {
+            const s = str(v).trim();
+            return s === '' ? undefined : (CHARGE_STATE_MAP[s] ?? s);
+        },
+    },
     chargingPower: { id: 'charging.power', conv: num },
     // Vanishes from the payload once charging ends — without volatile it would show the last
     // "N minutes remaining" for hours afterwards.

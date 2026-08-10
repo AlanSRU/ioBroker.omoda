@@ -11,7 +11,7 @@
     "Command PIN": "Command PIN",
     "Confirm OTP": "Confirm OTP",
     "Country ID": "Country ID",
-    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (Italy=39 [default], France=33, Germany=49, UK=44, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (Italy=39 [default], France=33, Germany=49, UK=44, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.",
+    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (UK=44 [default], Italy=39, France=33, Germany=49, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (UK=44 [default], Italy=39, France=33, Germany=49, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.",
     "Dept ID (country dialing code)": "Dept ID (country dialing code)",
     "Email is required": "Email is required",
     "Login (OTP)": "Login (OTP)",

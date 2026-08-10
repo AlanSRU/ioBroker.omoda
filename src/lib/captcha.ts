@@ -127,7 +127,7 @@ export function buildTemplate(jig: Gray): Template {
  * @param orig
  * @param jig
  */
-export function findGapX(orig: Gray, jig: Gray): number {
+export async function findGapX(orig: Gray, jig: Gray, yieldNow: () => Promise<void>): Promise<number> {
     const { T, T2, px, pw, ph } = buildTemplate(jig);
     if (pw === 0) {
         return 0;
@@ -151,6 +151,10 @@ export function findGapX(orig: Gray, jig: Gray): number {
     let bestScore = -1;
     let bestX = pw;
     for (let gy = 0; gy <= H - ph; gy++) {
+        // ~5e7 multiply-accumulates per attempt, up to 12 attempts. Yield once per scan row so the
+        // event loop keeps turning: io-package.json sets compact:true, so blocking here would also
+        // stall every other adapter sharing the compact host process.
+        await yieldNow();
         for (let gx = pw; gx <= W - pw; gx++) {
             let num = 0;
             let sumSq = 0;
@@ -206,7 +210,7 @@ export async function solveCaptcha(
         try {
             const orig = await decode(origB64);
             const jig = await decode(jigB64);
-            const x = findGapX(orig, jig);
+            const x = await findGapX(orig, jig, () => delay(0));
             const point = { x, y: 5 };
             const pointJson = JSON.stringify(point);
             const enc = aesEcbEncryptB64(pointJson, secret);

@@ -10,12 +10,10 @@
 /** BFF app-client Basic auth (base64 of "legendApp:legendApp") — a fixed app constant. */
 export const APP_BASIC = 'Basic bGVnZW5kQXBwOmxlZ2VuZEFwcA==';
 export const APP_VERSION = '1.1.9';
-export const APP_VERSION_CODE = '26060602';
 
 /** BFF request signature (POST): sha256_hex(SIGN_SECRET + nonce + url_path + ts_ms). */
 export const SIGN_NONCE = 'chery_legend_h5';
 export const SIGN_SECRET = 'cX5fR8lJ6pK2xD4uH1eK4pY6wA4xO0sK'; // prod (CURRENT_CAR_CONTROL_ENV=0)
-export const SIGN_SECRET_TEST = 'eQ9fQ9zM9yI7bZ1uY9wR2dQ1pJ6xU0zT';
 
 /** SM4 fixed key (SM4.createHexKey), 16 bytes. Used for login `code` + checkPassword PIN. */
 export const SM4_KEY = Buffer.from('mHU80av2zFtf4OY6', 'utf-8');
@@ -31,41 +29,27 @@ export const TSP_APP_SECRET = 'EBUJPYr7oDd48C9Te9c755942Y7T48dV293Y4Z931J098X41a
 /** Shared app constant (not a user secret): seed to derive the car MQTT password. */
 export const CAR_SEED = 'fa89db3abe8045919d70c6ed3cc65bc5';
 
-// ── Region defaults (Europe). Exposed as adapter config for other markets. ──────────
-export interface RegionConfig {
-    bff: string;
-    tspHost: string;
-    mqttHost: string;
-    mqttPort: number;
-    tenant: string;
-    channelId: string;
-    countryId: string;
-    deptId: string;
-}
-
-export const REGION_EU: RegionConfig = {
-    bff: 'https://legend-oj.omodaauto.nl/api',
-    tspHost: 'https://tspconsole-eu.cheryinternational.com',
-    mqttHost: 'tspemqx-app-eu.cheryinternational.com',
-    mqttPort: 8083,
-    tenant: '300006',
-    channelId: '1',
-    countryId: '1',
-    // DEPT-ID = the account country's international dialing prefix (NOT universal!):
-    // IT=39 (this default), FR=33, DE=49, UK=44, NL=31. A wrong value makes the TSP login
-    // fail with code=1 "Please contact customer service for assistance". User-configurable in admin.
-    deptId: '44',
-};
+// Region defaults live in io-package.json `native` (bff/tspHost/mqttHost/mqttPort/tenant/
+// channelId/countryId/deptId) and are user-editable under "Region & polling" in admin. There is
+// deliberately no second copy here: a RegionConfig/REGION_EU pair used to duplicate those values
+// with nothing keeping the two in sync.
+//
+// DEPT-ID is the one that catches people out — it must be the account country's international
+// dialing prefix (UK=44 default, IT=39, FR=33, DE=49, NL=31), not a fixed region id. A wrong value
+// makes the TSP login fail with code=1 "Please contact customer service for assistance".
 
 // ── Endpoint paths (relative to BFF host + "/api", or absolute path on the TSP host) ──
 export const EP = {
     // BFF
     token: '/auth/oauth2/token',
     sendMailCode: '/marketing/v2/app/code/sendMailCode',
+    // Not wired yet: needed by the phone/SMS login flow deferred from upstream v1.8.0.
     sendSmsCode: '/marketing/v2/app/code/sendSmsCode',
     captchaCreate: '/code/create',
     captchaCheck: '/code/check',
     tspLogin: '/tsp/v1/app/auth/login',
+    // Not wired yet: tUserId currently comes back from bffLogin, so this standalone lookup is
+    // only needed if that ever stops returning it.
     getTuserId: '/tsp/v1/app/auth/getTuserId',
     vmcList: '/tsp/v1/app/vmc/queryList',
     setVecDefault: '/tsp/v1/app/vmc/setVecDefault',
@@ -75,6 +59,7 @@ export const EP = {
     realtime: '/asr/manager/realtime',
     vehicleLocation: '/asc/vehicleControl/queryVehicleLocation',
     vehicleControl: '/asc/vehicleControl/', // + endpoint
+    // Not wired yet: theft-alarm state, a verified recipe kept for a later release.
     theftQuery: '/act/theftAlarm/querySwitch',
 } as const;
 
@@ -83,17 +68,11 @@ export const TIMING = {
     sessionEverySec: 900,
     awakeWindowSec: 300,
     pollNormalMin: 60,
-    pollChargingMin: 30,
     pollWakeWaitSec: 25,
     hvOnPollEverySec: 60,
     hvOnPollMax: 90,
     chargingPollEverySec: 120,
     chargingPollMax: 300,
-    driveWatchEverySec: 180,
-    macroWakeWaitSec: 35,
-    macroPresetSec: 15 * 60 + 60,
-    commandSettleSec: 5,
-    commandQueueWaitSec: 30,
     wakeCooldownSec: 300,
 } as const;
 

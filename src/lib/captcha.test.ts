@@ -49,7 +49,7 @@ describe('captcha/findGapX', () => {
         expect(tpl.T2).to.be.greaterThan(0); // ring outline has energy
     });
 
-    it('locates the gap column: returns gapLeft - pieceX0', () => {
+    it('locates the gap column: returns gapLeft - pieceX0', async () => {
         const tpl = buildTemplate(jig);
         const gx0 = 120; // where we paint the matching white outline in the background
         const gy0 = 20;
@@ -65,7 +65,8 @@ describe('captcha/findGapX', () => {
             return [0, 0, 0, 255];
         });
 
-        const x = findGapX(orig, jig);
+        // The scan yields once per row so it cannot block a compact host; resolve immediately here.
+        const x = await findGapX(orig, jig, () => Promise.resolve());
         expect(x).to.equal(gx0 - tpl.px);
     });
 });

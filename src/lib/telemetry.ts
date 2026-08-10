@@ -17,6 +17,12 @@ import { mask, str } from './util';
 /** Command-confirmation meta-fields — NOT vehicle telemetry (coordinator.CMD_CONFIRM_META). */
 const CMD_CONFIRM_META = new Set(['result', 'resultTime', 'seq', 'reason', 'hasAsy']);
 
+/** Reconnect backoff: 10s doubling to 2min, matching the HA integration's reconnect_delay_set. */
+const RECONNECT_BASE_MS = 10_000;
+const RECONNECT_MAX_MS = 120_000;
+/** A connection has to survive this long to count as healthy and reset the backoff. */
+const RECONNECT_STABLE_MS = 60_000;
+
 export interface TelemetryHandlers {
     /** Vehicle state fields from a 5A02 (or the state part of a confirmation) push. */
     onFields(fields: Record<string, string>): void;
@@ -79,7 +85,14 @@ export class MqttTelemetry {
             checkServerIdentity: () => undefined,
         } as mqtt.IClientOptions);
 
+        // Reconnect backoff state. mqtt.js has no built-in backoff — reconnectPeriod is a fixed
+        // number it re-reads before each attempt, so it is mutated in place below.
+        let reconnectMs = RECONNECT_BASE_MS;
+        let connectedAt = 0;
+        let errorLogged = false;
+
         client.on('connect', () => {
+            connectedAt = Date.now();
             // Never log the raw topic/tuserId — the topic embeds the tUserId (MQTT username,
             // from which the MQTT password is derived). Mask it.
             this.log.info(`[${mask(tuserId)}] car MQTT connected → subscribing account/msgCenter/msg`);
@@ -90,9 +103,28 @@ export class MqttTelemetry {
                 }
             });
         });
-        client.on('reconnect', () => this.log.debug('car MQTT reconnecting…'));
-        client.on('close', () => this.handlers.onConnected(false));
-        client.on('error', err => this.log.warn(`car MQTT error: ${err.message}`));
+        client.on('reconnect', () => this.log.debug(`car MQTT reconnecting… (retry delay ${reconnectMs / 1000}s)`));
+        client.on('close', () => {
+            this.handlers.onConnected(false);
+            // Back off unless the connection actually held. Resetting on every 'connect' would
+            // defeat this: the broker accepts the CONNECT and only drops us ~1s later when another
+            // client holds the same clientId (the official app or a second integration on the same
+            // account), which would otherwise flap at a fixed 10s forever. Certificate rotation
+            // behaves the same way.
+            const heldStable = connectedAt > 0 && Date.now() - connectedAt >= RECONNECT_STABLE_MS;
+            reconnectMs = heldStable ? RECONNECT_BASE_MS : Math.min(reconnectMs * 2, RECONNECT_MAX_MS);
+            connectedAt = 0;
+            client.options.reconnectPeriod = reconnectMs;
+        });
+        client.on('error', err => {
+            // A permanently failing connection would otherwise emit a warn per attempt (~8600/day).
+            if (errorLogged) {
+                this.log.debug(`car MQTT error: ${err.message}`);
+            } else {
+                errorLogged = true;
+                this.log.warn(`car MQTT error: ${err.message} — further occurrences logged at debug level`);
+            }
+        });
         client.on('message', (_t, payload) => this.onMessage(payload));
 
         this.client = client;

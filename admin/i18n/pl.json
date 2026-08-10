@@ -11,7 +11,7 @@
     "Command PIN": "PIN polecenia",
     "Confirm OTP": "Potwierdź hasło jednorazowe",
     "Country ID": "Identyfikator kraju",
-    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (Italy=39 [default], France=33, Germany=49, UK=44, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "Domyślnie kierowany jest na Europę. WAŻNE: ustaw „ID działu” na międzynarodowy numer kierunkowy kraju swojego konta (Włochy=39 [domyślnie], Francja=33, Niemcy=49, Wielka Brytania=44, Holandia=31). Niedopasowany identyfikator działu powoduje, że logowanie kończy się niepowodzeniem i wyświetla się komunikat „Skontaktuj się z obsługą klienta w celu uzyskania pomocy”. Zmień pozostałe pola tylko dla rynków spoza UE.",
+    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (UK=44 [default], Italy=39, France=33, Germany=49, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "Domyślnie kierowany jest na Europę. WAŻNE: ustaw „ID działu” na międzynarodowy numer kierunkowy kraju swojego konta (Wielka Brytania=44 [domyślnie], Włochy=39, Francja=33, Niemcy=49, Holandia=31). Niedopasowany identyfikator działu powoduje, że logowanie kończy się niepowodzeniem i wyświetla się komunikat „Skontaktuj się z obsługą klienta w celu uzyskania pomocy”. Zmień pozostałe pola tylko dla rynków spoza UE.",
     "Dept ID (country dialing code)": "ID działu (numer kierunkowy kraju)",
     "Email is required": "Adres e-mail jest wymagany",
     "Login (OTP)": "Zaloguj się",

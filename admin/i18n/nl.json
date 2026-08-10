@@ -11,7 +11,7 @@
     "Command PIN": "Commando-pincode",
     "Confirm OTP": "Bevestig OTP",
     "Country ID": "Land-ID",
-    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (Italy=39 [default], France=33, Germany=49, UK=44, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "De standaardinstellingen zijn gericht op Europa. BELANGRIJK: stel 'Afd.-ID' in op de internationale belcode van uw accountland (Italië=39 [standaard], Frankrijk=33, Duitsland=49, VK=44, Nederland=31). Een niet-overeenkomende afdelings-ID zorgt ervoor dat inloggen mislukt met 'Neem contact op met de klantenservice voor hulp'. Wijzig de overige velden alleen voor niet-EU-markten.",
+    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (UK=44 [default], Italy=39, France=33, Germany=49, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "De standaardinstellingen zijn gericht op Europa. BELANGRIJK: stel 'Afd.-ID' in op de internationale belcode van uw accountland (VK=44 [standaard], Italië=39, Frankrijk=33, Duitsland=49, Nederland=31). Een niet-overeenkomende afdelings-ID zorgt ervoor dat inloggen mislukt met 'Neem contact op met de klantenservice voor hulp'. Wijzig de overige velden alleen voor niet-EU-markten.",
     "Dept ID (country dialing code)": "Afdelings-ID (landnummer)",
     "Email is required": "E-mail is vereist",
     "Login (OTP)": "Inloggen (OTP)",

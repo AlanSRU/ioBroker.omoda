@@ -11,7 +11,7 @@
     "Command PIN": "命令密码",
     "Confirm OTP": "确认一次性密码",
     "Country ID": "国家/地区 ID",
-    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (Italy=39 [default], France=33, Germany=49, UK=44, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "默认目标是欧洲。重要提示：将“部门 ID”设置为您帐户所在国家/地区的国际拨号代码（意大利=39 [默认]、法国=33、德国=49、英国=44、荷兰=31）。部门 ID 不匹配会导致登录失败，并显示“请联系客户服务寻求帮助”。仅针对非欧盟市场更改其他字段。",
+    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (UK=44 [default], Italy=39, France=33, Germany=49, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "默认目标是欧洲。重要提示：将“部门 ID”设置为您帐户所在国家/地区的国际拨号代码（英国=44 [默认]、意大利=39、法国=33、德国=49、荷兰=31）。部门 ID 不匹配会导致登录失败，并显示“请联系客户服务寻求帮助”。仅针对非欧盟市场更改其他字段。",
     "Dept ID (country dialing code)": "部门 ID（国家/地区代码）",
     "Email is required": "电子邮件为必填项",
     "Login (OTP)": "登录（一次性密码）",

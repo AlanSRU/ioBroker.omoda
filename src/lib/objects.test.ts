@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { STATES } from './objects';
+import { GEO_MAP, MQTT_MAP, RT_MAP, STATES } from './objects';
 
 /**
  * The state-role contract for every role this adapter uses, transcribed from
@@ -33,7 +33,6 @@ const ROLE_RULES: Record<string, RoleRule> = {
     text: { types: ['string'] },
     value: { types: ['number'], read: true, write: false },
     'value.battery': { types: ['number'], read: true, write: false },
-    'value.direction': { types: ['number'], read: true, write: false },
     'value.distance': { types: ['number'], read: true, write: false },
     'value.gps.latitude': { types: ['number'], read: true, write: false },
     'value.gps.longitude': { types: ['number'], read: true, write: false },
@@ -106,5 +105,56 @@ describe('objects/STATES roles', () => {
             s => `${s.id} is writable but role ${s.common.role} is read-only`,
         );
         expect(wrong).to.deep.equal([]);
+    });
+});
+
+/**
+ * MQTT telemetry fields are stringified before they reach a converter, so a JSON `null` arrives as
+ * `''`. Number('') and Number(null) are both 0, which silently turned "not reported" into a real
+ * reading: doors.locked said "locked", the odometer said 0 km, and lat/lon 0 put the car in the
+ * Gulf of Guinea. Every converter must return undefined for both forms so the state is left alone.
+ */
+describe('objects/telemetry converters reject unreported values', () => {
+    const NOT_REPORTED = [null, undefined, '', '   '];
+
+    it('never turns an unreported MQTT field into a value', () => {
+        const leaks: string[] = [];
+        for (const [field, target] of Object.entries(MQTT_MAP)) {
+            for (const raw of NOT_REPORTED) {
+                const out = target.conv(raw);
+                if (out !== undefined) {
+                    leaks.push(`${field} (${target.id}): ${JSON.stringify(raw)} → ${JSON.stringify(out)}`);
+                }
+            }
+        }
+        expect(leaks).to.deep.equal([]);
+    });
+
+    it('never turns an unreported realtime or GPS field into a value', () => {
+        const leaks: string[] = [];
+        for (const [name, map] of [
+            ['RT_MAP', RT_MAP],
+            ['GEO_MAP', GEO_MAP],
+        ] as const) {
+            for (const [field, target] of Object.entries(map)) {
+                for (const raw of NOT_REPORTED) {
+                    const out = target.conv(raw);
+                    if (out !== undefined) {
+                        leaks.push(`${name}.${field} (${target.id}): ${JSON.stringify(raw)} → ${JSON.stringify(out)}`);
+                    }
+                }
+            }
+        }
+        expect(leaks).to.deep.equal([]);
+    });
+
+    it('still converts genuine zero values', () => {
+        // 0 is meaningful: doorLock 0 = locked, speed 0 = stationary, lat 0 is a real coordinate.
+        expect(MQTT_MAP.doorLock.conv(0), 'doorLock 0 = locked').to.equal(true);
+        expect(MQTT_MAP.doorLock.conv('0'), 'stringified doorLock 0').to.equal(true);
+        expect(MQTT_MAP.doorLock.conv(1), 'doorLock 1 = unlocked').to.equal(false);
+        expect(MQTT_MAP.frontLeftDoor.conv('0'), 'door closed').to.equal(false);
+        expect(GEO_MAP.lat.conv(0), 'latitude 0 is a real coordinate').to.equal(0);
+        expect(RT_MAP.odometer.conv('0'), 'odometer 0').to.equal(0);
     });
 });

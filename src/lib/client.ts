@@ -501,7 +501,6 @@ export class OmodaClient {
             name: name || undefined,
             model: full ? titleCase(full) : undefined,
             brand: full || nick ? deriveBrand(full || nick) : undefined,
-            authorizeType: typeof item.authorizeType === 'number' ? item.authorizeType : undefined,
             powerType: typeof item.powerType === 'number' ? item.powerType : undefined,
             climateMinTemp: num('minTemperature'),
             climateMaxTemp: num('maxTemperature'),

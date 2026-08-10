@@ -5,7 +5,6 @@
 import * as utils from '@iobroker/adapter-core';
 import * as path from 'node:path';
 import { promises as fs } from 'node:fs';
-import { APP_VERSION } from './lib/constants';
 import { OmodaClient } from './lib/client';
 import { TokenStore } from './lib/tokenStore';
 import { VehicleController } from './lib/controller';
@@ -44,7 +43,6 @@ class Omoda extends utils.Adapter {
             language: c.language || 'en-GB',
             email: (c.email || '').trim(),
             pin: c.pin || '',
-            appVersion: APP_VERSION,
             // Clamp in code (jsonConfig min/max is not sufficient). 0 = off for the polls;
             // caps keep every derived setTimeout/Interval well under 2^31 ms.
             pollNormalMin: c.pollNormalMin ? clamp(Number(c.pollNormalMin), 5, 10080, 60) : 0,
@@ -187,10 +185,13 @@ class Omoda extends utils.Adapter {
         try {
             let result: string | null = null;
             switch (rel) {
-                case 'commands.lock':
-                    result = await ctrl.lock(Boolean(state.val));
-                    void this.setState(id, { val: Boolean(state.val), ack: true });
+                case 'commands.lock': {
+                    // switch.lock spec polarity: true = open the lock (unlock), false = close it.
+                    const open = Boolean(state.val);
+                    result = await ctrl.lock(!open);
+                    void this.setState(id, { val: open, ack: true });
                     break;
+                }
                 case 'commands.climateOn': {
                     const t = await this.getStateAsync(`${ctrl.id}.climate.targetTemperature`);
                     const temp = typeof t?.val === 'number' ? t.val : undefined;

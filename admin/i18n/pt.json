@@ -11,7 +11,7 @@
     "Command PIN": "PIN de comando",
     "Confirm OTP": "Confirmar OTP",
     "Country ID": "ID do país",
-    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (Italy=39 [default], France=33, Germany=49, UK=44, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "Os padrões visam a Europa. IMPORTANTE: defina 'Dept ID' como o código de discagem internacional do país da sua conta (Itália=39 [padrão], França=33, Alemanha=49, Reino Unido=44, Holanda=31). Um ID de departamento incompatível faz com que o login falhe com 'Entre em contato com o atendimento ao cliente para obter assistência'. Altere os outros campos apenas para mercados fora da UE.",
+    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (UK=44 [default], Italy=39, France=33, Germany=49, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "Os padrões visam a Europa. IMPORTANTE: defina 'Dept ID' como o código de discagem internacional do país da sua conta (Reino Unido=44 [padrão], Itália=39, França=33, Alemanha=49, Holanda=31). Um ID de departamento incompatível faz com que o login falhe com 'Entre em contato com o atendimento ao cliente para obter assistência'. Altere os outros campos apenas para mercados fora da UE.",
     "Dept ID (country dialing code)": "ID do departamento (código de discagem do país)",
     "Email is required": "O e-mail é obrigatório",
     "Login (OTP)": "Login (OTP)",

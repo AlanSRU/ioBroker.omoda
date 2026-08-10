@@ -15,7 +15,11 @@ import { GEO_MAP, MQTT_MAP, RT_MAP } from './objects';
 import type { RuntimeConfig, Vehicle } from './types';
 import { str } from './util';
 
+/** Same strictness as objects.toNumStrict: null/'' mean "not reported", never 0. */
 function toNum(v: unknown): number | undefined {
+    if (v == null || (typeof v === 'string' && v.trim() === '')) {
+        return undefined;
+    }
     const n = Number(v);
     return Number.isNaN(n) ? undefined : n;
 }
@@ -101,8 +105,14 @@ export class VehicleController {
         void this.probe().catch(e => this.adapter.log.debug(`initial probe failed: ${(e as Error).message}`));
 
         // Keepalive: refresh the session token periodically (configurable, clamped in main).
+        // This is also the adapter's liveness signal: the session dies whenever the official app
+        // logs in on the same account, and without reporting that, info.connection would stay
+        // true forever while every poll silently returned nothing.
         this.keepaliveTimer = this.adapter.setInterval(() => {
-            void this.client.refreshToken().catch(() => undefined);
+            void this.client
+                .refreshToken()
+                .then(ok => this.setSessionAlive(ok))
+                .catch(() => this.setSessionAlive(false));
         }, this.cfg.sessionEverySec * 1000);
 
         // Normal poll: wake + realtime + GPS (for parked telemetry). 0 disables.
@@ -134,6 +144,15 @@ export class VehicleController {
 
     private setOnline(connected: boolean): void {
         this.set('info.online', connected);
+    }
+
+    /**
+     * Adapter-level connection indicator. The session is shared by every vehicle (one account),
+     * so this is a global state, not a per-VIN one.
+     */
+    private setSessionAlive(ok: boolean): void {
+        void this.adapter.setState('info.connection', { val: ok, ack: true });
+        this.set('info.sessionStatus', ok ? 'Session active' : 'Session expired — request a new OTP');
     }
 
     private applyFields(fields: Record<string, string>): void {

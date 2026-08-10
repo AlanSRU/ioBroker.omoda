@@ -13,7 +13,6 @@ export interface RuntimeConfig {
     language: string;
     email: string;
     pin: string;
-    appVersion: string;
     pollNormalMin: number;
     sessionEverySec: number;
     wakeCooldownSec: number;
@@ -44,7 +43,6 @@ export interface Vehicle {
     name?: string;
     model?: string;
     brand?: string;
-    authorizeType?: number; // 2 = owner, 0 = delegate
     powerType?: number; // 0 = pure electric (BEV)
     climateMinTemp?: number;
     climateMaxTemp?: number;

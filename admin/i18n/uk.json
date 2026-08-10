@@ -11,7 +11,7 @@
     "Command PIN": "PIN команди",
     "Confirm OTP": "Підтвердьте OTP",
     "Country ID": "ID країни",
-    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (Italy=39 [default], France=33, Germany=49, UK=44, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "За замовчуванням націлено на Європу. ВАЖЛИВО: встановіть «Ідентифікатор відділу» на міжнародний телефонний код країни вашого облікового запису (Італія=39 [за умовчанням], Франція=33, Німеччина=49, Великобританія=44, Нідерланди=31). Невідповідний ідентифікатор відділу призводить до помилки входу з повідомленням «Зверніться до служби підтримки клієнтів для отримання допомоги». Змінюйте інші поля лише для ринків поза ЄС.",
+    "Defaults target Europe. IMPORTANT: set 'Dept ID' to your account country's international dialing code (UK=44 [default], Italy=39, France=33, Germany=49, Netherlands=31). A mismatched Dept ID makes login fail with 'Please contact customer service for assistance'. Change the other fields only for non-EU markets.": "За замовчуванням націлено на Європу. ВАЖЛИВО: встановіть «Ідентифікатор відділу» на міжнародний телефонний код країни вашого облікового запису (Великобританія=44 [за умовчанням], Італія=39, Франція=33, Німеччина=49, Нідерланди=31). Невідповідний ідентифікатор відділу призводить до помилки входу з повідомленням «Зверніться до служби підтримки клієнтів для отримання допомоги». Змінюйте інші поля лише для ринків поза ЄС.",
     "Dept ID (country dialing code)": "ID відділу (телефонний код країни)",
     "Email is required": "Необхідно вказати адресу електронної пошти",
     "Login (OTP)": "Логін (OTP)",
