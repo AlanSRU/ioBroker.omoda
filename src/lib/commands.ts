@@ -10,7 +10,7 @@
  * ⚠️ Every send() with a valid taskId ACTS on the car — only invoke on explicit user intent.
  */
 import { createHash } from 'node:crypto';
-import { EP, FAILURE_CODES, RETRYABLE_CODES, codeMeaning } from './constants';
+import { EP, FAILURE_CODES, codeMeaning } from './constants';
 import { sm4Code } from './crypto/sm4';
 import type { SignParams } from './crypto/sign';
 import type { OmodaClient } from './client';
@@ -19,17 +19,20 @@ import { str } from './util';
 
 export type CommandReason = 'pin' | 'reauth' | 'config' | null;
 
-/** A command the backend/car REFUSED (not executed). `reason` routes the remedy. */
+/**
+ * A command the backend/car REFUSED (not executed). `reason` routes the remedy.
+ *
+ * There is deliberately no `retryable` flag: "car busy" (A00082) already tells the user to retry
+ * through its CODE_MEANING text, and a flag nothing reads is just dead weight.
+ */
 export class CommandError extends Error {
     readonly code: string | null;
     readonly reason: CommandReason;
-    readonly retryable: boolean;
     constructor(message: string, code: string | null = null, reason: CommandReason = null) {
         super(message);
         this.name = 'CommandError';
         this.code = code;
         this.reason = reason;
-        this.retryable = code != null && RETRYABLE_CODES.has(code);
     }
 }
 

@@ -53,6 +53,9 @@ export class MqttTelemetry {
             tuserId: string;
             certs: CertSet;
             awakeWindowSec: number;
+            /** Framework-managed timers (never bare setTimeout — repochecker S5005). */
+            setTimer: (cb: () => void, ms: number) => ioBroker.Timeout | undefined;
+            clearTimer: (t: ioBroker.Timeout | undefined) => void;
         },
         private readonly log: Logger,
         private readonly handlers: TelemetryHandlers,
@@ -85,14 +88,31 @@ export class MqttTelemetry {
             checkServerIdentity: () => undefined,
         } as mqtt.IClientOptions);
 
-        // Reconnect backoff state. mqtt.js has no built-in backoff — reconnectPeriod is a fixed
-        // number it re-reads before each attempt, so it is mutated in place below.
+        // Reconnect backoff state. mqtt.js has no built-in backoff: it reads
+        // options.reconnectPeriod inside its OWN 'close' handling (_setupReconnect), which is
+        // registered in the constructor and therefore runs BEFORE this listener. So the value has
+        // to be correct *before* a close happens — writing it in our 'close' handler would only
+        // take effect one drop later. Hence: escalate on connect (pessimistic, covers an immediate
+        // drop) and reset once the connection has proven itself (optimistic).
         let reconnectMs = RECONNECT_BASE_MS;
-        let connectedAt = 0;
         let errorLogged = false;
+        let stableTimer: ioBroker.Timeout | undefined;
+
+        const setPeriod = (ms: number): void => {
+            reconnectMs = ms;
+            client.options.reconnectPeriod = ms;
+        };
 
         client.on('connect', () => {
-            connectedAt = Date.now();
+            // If this connection drops straight away, mqtt will arm the escalated delay. This is
+            // what stops a fixed 10s flap when another client holds the same clientId (the
+            // official app, or a second integration on the same account) or the certs are stale.
+            setPeriod(Math.min(reconnectMs * 2, RECONNECT_MAX_MS));
+            this.opts.clearTimer(stableTimer);
+            stableTimer = this.opts.setTimer(() => {
+                stableTimer = undefined;
+                setPeriod(RECONNECT_BASE_MS); // healthy link → next drop retries promptly
+            }, RECONNECT_STABLE_MS);
             // Never log the raw topic/tuserId — the topic embeds the tUserId (MQTT username,
             // from which the MQTT password is derived). Mask it.
             this.log.info(`[${mask(tuserId)}] car MQTT connected → subscribing account/msgCenter/msg`);
@@ -106,15 +126,10 @@ export class MqttTelemetry {
         client.on('reconnect', () => this.log.debug(`car MQTT reconnecting… (retry delay ${reconnectMs / 1000}s)`));
         client.on('close', () => {
             this.handlers.onConnected(false);
-            // Back off unless the connection actually held. Resetting on every 'connect' would
-            // defeat this: the broker accepts the CONNECT and only drops us ~1s later when another
-            // client holds the same clientId (the official app or a second integration on the same
-            // account), which would otherwise flap at a fixed 10s forever. Certificate rotation
-            // behaves the same way.
-            const heldStable = connectedAt > 0 && Date.now() - connectedAt >= RECONNECT_STABLE_MS;
-            reconnectMs = heldStable ? RECONNECT_BASE_MS : Math.min(reconnectMs * 2, RECONNECT_MAX_MS);
-            connectedAt = 0;
-            client.options.reconnectPeriod = reconnectMs;
+            // The retry for THIS close was already armed by mqtt from options.reconnectPeriod, so
+            // there is nothing to set here — just stop the pending "it held" reset.
+            this.opts.clearTimer(stableTimer);
+            stableTimer = undefined;
         });
         client.on('error', err => {
             // A permanently failing connection would otherwise emit a warn per attempt (~8600/day).

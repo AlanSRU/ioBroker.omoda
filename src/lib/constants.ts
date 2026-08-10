@@ -65,15 +65,12 @@ export const EP = {
 
 // ── Polling / timing intervals (seconds unless noted) — from const.py ────────────────
 export const TIMING = {
-    sessionEverySec: 900,
     awakeWindowSec: 300,
-    pollNormalMin: 60,
     pollWakeWaitSec: 25,
     hvOnPollEverySec: 60,
     hvOnPollMax: 90,
     chargingPollEverySec: 120,
     chargingPollMax: 300,
-    wakeCooldownSec: 300,
 } as const;
 
 // ── Backend response codes → readable text (core/codes.py) ───────────────────────────
@@ -90,9 +87,7 @@ export const CODE_MEANING: Record<string, string> = {
     A07900: 'car asleep / unreachable (or signature/car_token invalid) ⌛',
 };
 
-export const SUCCESS_CODES = new Set(['000000', 'A00079']);
 export const FAILURE_CODES = new Set(['A00082', 'A00084', 'A00089', 'A00546', 'A00567', 'A00000', 'A07312', 'A07900']);
-export const RETRYABLE_CODES = new Set(['A00082']);
 
 /**
  * Human-readable phrase for a backend code (falls back to the raw code).

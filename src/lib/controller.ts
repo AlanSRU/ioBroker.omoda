@@ -15,6 +15,9 @@ import { GEO_MAP, MQTT_MAP, RT_MAP } from './objects';
 import type { RuntimeConfig, Vehicle } from './types';
 import { str } from './util';
 
+/** Consecutive failed session checks before info.connection is reported false. */
+const SESSION_FAIL_MAX = 2;
+
 /** Same strictness as objects.toNumStrict: null/'' mean "not reported", never 0. */
 function toNum(v: unknown): number | undefined {
     if (v == null || (typeof v === 'string' && v.trim() === '')) {
@@ -43,6 +46,7 @@ export class VehicleController {
     private followActive = false;
     private lastWakeMs = 0;
     private stopped = false;
+    private sessionFailures = 0;
 
     constructor(
         private readonly adapter: ioBroker.Adapter,
@@ -81,6 +85,7 @@ export class VehicleController {
             await this.stop();
         }
         this.stopped = false;
+        this.sessionFailures = 0;
         this.mqtt = new MqttTelemetry(
             {
                 host: this.cfg.mqttHost,
@@ -89,6 +94,12 @@ export class VehicleController {
                 tuserId,
                 certs: this.certs,
                 awakeWindowSec: TIMING.awakeWindowSec,
+                setTimer: (cb, ms) => this.adapter.setTimeout(cb, ms),
+                clearTimer: t => {
+                    if (t) {
+                        this.adapter.clearTimeout(t);
+                    }
+                },
             },
             this.adapter.log,
             {
@@ -104,15 +115,16 @@ export class VehicleController {
         // Initial read so a parked car shows last-known values at startup.
         void this.probe().catch(e => this.adapter.log.debug(`initial probe failed: ${(e as Error).message}`));
 
-        // Keepalive: refresh the session token periodically (configurable, clamped in main).
-        // This is also the adapter's liveness signal: the session dies whenever the official app
-        // logs in on the same account, and without reporting that, info.connection would stay
-        // true forever while every poll silently returned nothing.
+        // Keepalive + liveness. checkSession() attempts the real BFF/TSP login (refreshing the
+        // OAuth token on the way), so it detects the failures that matter: the official app logging
+        // in on the same account, an unshared vehicle, or a wrong deptId. A bare refreshToken()
+        // call would not — the OAuth refresh can keep succeeding while tspLogin returns nothing,
+        // leaving info.connection stuck true while every poll silently returns null.
         this.keepaliveTimer = this.adapter.setInterval(() => {
             void this.client
-                .refreshToken()
-                .then(ok => this.setSessionAlive(ok))
-                .catch(() => this.setSessionAlive(false));
+                .checkSession()
+                .then(r => this.reportSession(r.ok, r.detail))
+                .catch(e => this.reportSession(false, `network error: ${(e as Error).name}`));
         }, this.cfg.sessionEverySec * 1000);
 
         // Normal poll: wake + realtime + GPS (for parked telemetry). 0 disables.
@@ -147,12 +159,25 @@ export class VehicleController {
     }
 
     /**
-     * Adapter-level connection indicator. The session is shared by every vehicle (one account),
-     * so this is a global state, not a per-VIN one.
+     * Adapter-level connection indicator. The session is shared by every vehicle (one account), so
+     * info.connection is a global state, not a per-VIN one.
+     *
+     * Requires SESSION_FAIL_MAX consecutive failures before reporting disconnected: a single failed
+     * check is just as likely to be a network blip or a 25s axios timeout as a dead session, and
+     * flipping on the first one would tell the user to redo the OTP while telemetry still flows.
      */
-    private setSessionAlive(ok: boolean): void {
-        void this.adapter.setState('info.connection', { val: ok, ack: true });
-        this.set('info.sessionStatus', ok ? 'Session active' : 'Session expired — request a new OTP');
+    private reportSession(ok: boolean, detail: string): void {
+        this.sessionFailures = ok ? 0 : this.sessionFailures + 1;
+        if (ok) {
+            void this.adapter.setState('info.connection', { val: true, ack: true });
+            this.set('info.sessionStatus', detail || 'Session active');
+            return;
+        }
+        this.adapter.log.debug(`session check failed (${this.sessionFailures}/${SESSION_FAIL_MAX}): ${detail}`);
+        if (this.sessionFailures >= SESSION_FAIL_MAX) {
+            void this.adapter.setState('info.connection', { val: false, ack: true });
+            this.set('info.sessionStatus', detail);
+        }
     }
 
     private applyFields(fields: Record<string, string>): void {
@@ -198,7 +223,10 @@ export class VehicleController {
             }
         }
         // Total range = electric + petrol range (HA _range_totale); electric-only on a BEV.
-        const elec = toNum(payload.pureElectricRange) ?? toNum(payload.dynamicPureElectricRange);
+        // Precedence must match RT_MAP's for battery.rangeElectric, where dynamicPureElectricRange
+        // is written last and therefore wins. Taking pureElectricRange first here produced a
+        // "total" range BELOW the electric range whenever both fields were present.
+        const elec = toNum(payload.dynamicPureElectricRange) ?? toNum(payload.pureElectricRange);
         if (elec !== undefined) {
             const fuel = toNum(payload.mileageSurplus) ?? 0;
             this.set('battery.rangeTotal', elec + fuel);

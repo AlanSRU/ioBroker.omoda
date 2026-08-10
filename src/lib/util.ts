@@ -1,10 +1,5 @@
 /* Small shared helpers. */
 
-/**
- * Safe stringify for values of `unknown`/JSON-parsed origin: primitives become their string,
- * null/undefined/objects become ''. Avoids accidental "[object Object]" and satisfies
- * the no-base-to-string lint rule on untyped backend payload fields.
- */
 /** Clamp a number into [min, max]; NaN → fallback. */
 export function clamp(v: number, min: number, max: number, fallback: number): number {
     if (Number.isNaN(v)) {
@@ -28,6 +23,11 @@ export function mask(s: string | null | undefined): string {
     return v.length <= 4 ? '…' : `…${v.slice(-4)}`;
 }
 
+/**
+ * Safe stringify for values of `unknown`/JSON-parsed origin: primitives become their string,
+ * null/undefined/objects become ''. Avoids accidental "[object Object]" and satisfies
+ * the no-base-to-string lint rule on untyped backend payload fields.
+ */
 export function str(v: unknown): string {
     if (v === null || v === undefined) {
         return '';
