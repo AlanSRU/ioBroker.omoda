@@ -54,7 +54,7 @@ export const REGION_EU: RegionConfig = {
     // DEPT-ID = the account country's international dialing prefix (NOT universal!):
     // IT=39 (this default), FR=33, DE=49, UK=44, NL=31. A wrong value makes the TSP login
     // fail with code=1 "Please contact customer service for assistance". User-configurable in admin.
-    deptId: '39',
+    deptId: '44',
 };
 
 // ── Endpoint paths (relative to BFF host + "/api", or absolute path on the TSP host) ──

@@ -64,9 +64,12 @@ describe('commands/CommandRunner', () => {
         expect(out).to.contain('Lock doors');
     });
 
+    // The backend has no documented "wrong PIN" code — a wrong PIN falls through to the default
+    // branch, so an unrecognised code is what exercises it. A00567 is NOT that: it means
+    // "incomplete checkPassword parameters", i.e. a request-construction fault (see CONFIG_CODES).
     it('raises a pin CommandError when checkPassword returns no taskId', async () => {
         const fc = new FakeClient();
-        fc.checkPasswordQueue = [{ code: 'A00567' }];
+        fc.checkPasswordQueue = [{ code: 'A09999' }];
         try {
             await runner(fc).send('blocca');
             expect.fail('expected CommandError');
@@ -87,9 +90,27 @@ describe('commands/CommandRunner', () => {
         }
     });
 
+    it('routes a config code (A00567) to a config CommandError without counting the lockout', async () => {
+        const fc = new FakeClient();
+        // Three config-code rejections in a row: none may count towards the anti-lockout, so all
+        // three still reach the backend rather than the third being blocked locally.
+        fc.checkPasswordQueue = [{ code: 'A00567' }, { code: 'A00567' }, { code: 'A00567' }];
+        const r = runner(fc);
+        for (let i = 0; i < 3; i++) {
+            try {
+                await r.send('blocca');
+                expect.fail('expected CommandError');
+            } catch (e) {
+                expect(e).to.be.instanceOf(CommandError);
+                expect((e as CommandError).reason).to.equal('config');
+            }
+        }
+        expect(checkPwCount(fc)).to.equal(3);
+    });
+
     it('blocks after repeated wrong PINs (anti-lockout) before hitting the account', async () => {
         const fc = new FakeClient();
-        fc.checkPasswordQueue = [{ code: 'A00567' }, { code: 'A00567' }, { code: 'A00567' }];
+        fc.checkPasswordQueue = [{ code: 'A09999' }, { code: 'A09999' }, { code: 'A09999' }];
         const r = runner(fc);
         const attempt = async (): Promise<string> => {
             try {

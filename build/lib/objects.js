@@ -270,7 +270,9 @@ const RT_MAP = {
     return (_a = CHARGE_STATE_MAP[String(v)]) != null ? _a : String(v);
   } },
   chargingPower: { id: "charging.power", conv: num },
-  remainChargeTime: { id: "charging.remainingTime", conv: num },
+  // Vanishes from the payload once charging ends — without volatile it would show the last
+  // "N minutes remaining" for hours afterwards.
+  remainChargeTime: { id: "charging.remainingTime", conv: num, volatile: true },
   lFrontTyreKpa: { id: "tyres.frontLeftPressure", conv: num },
   rFrontTyreKpa: { id: "tyres.frontRightPressure", conv: num },
   lRearTyreKpa: { id: "tyres.rearLeftPressure", conv: num },

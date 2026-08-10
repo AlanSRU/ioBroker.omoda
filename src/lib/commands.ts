@@ -17,7 +17,7 @@ import type { OmodaClient } from './client';
 import type { Logger } from './types';
 import { str } from './util';
 
-export type CommandReason = 'pin' | 'reauth' | null;
+export type CommandReason = 'pin' | 'reauth' | 'config' | null;
 
 /** A command the backend/car REFUSED (not executed). `reason` routes the remedy. */
 export class CommandError extends Error {
@@ -116,7 +116,14 @@ export const COMMAND_CATALOG: Record<string, CommandDef> = {
     locate_car: { endpoint: 'vehicleLocation', body: {}, name: 'Locate car (GPS)', group: 'Other' },
 };
 
-const NON_PIN_CODES = new Set(['A00000']);
+/** Session/token expiry — not the PIN's fault, so it must not count towards the lockout. */
+const SESSION_CODES = new Set(['A00000']);
+/**
+ * Vehicle-permission and request-construction rejections. These are a configuration problem, not
+ * a wrong PIN, so they must not burn anti-lockout attempts either — counting them would push the
+ * account towards a real lockout over something the PIN cannot fix.
+ */
+const CONFIG_CODES = new Set(['A00374', 'A00554', 'A00567', 'A00604', 'A00643', 'A00757']);
 const TASKID_TTL_MS = 600 * 1000;
 const PIN_FAIL_MAX = 2;
 const PIN_FAIL_WINDOW_MS = 600 * 1000;
@@ -180,8 +187,15 @@ export class CommandRunner {
             return str(tid);
         }
         const code = j.code != null ? str(j.code) : null;
-        if (code && NON_PIN_CODES.has(code)) {
+        if (code && SESSION_CODES.has(code)) {
             throw new CommandError('Session expired — request a new OTP from the adapter settings', code, 'reauth');
+        }
+        if (code && CONFIG_CODES.has(code)) {
+            throw new CommandError(
+                `Command rejected — not a PIN problem: ${codeMeaning(code, 'vehicle permission or request problem')}`,
+                code,
+                'config',
+            );
         }
         this.pinFail.n += 1;
         this.pinFail.ts = now;

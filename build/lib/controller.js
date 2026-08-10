@@ -164,6 +164,8 @@ class VehicleController {
         if (v !== void 0) {
           this.set(target.id, v);
         }
+      } else if (target.volatile) {
+        this.set(target.id, null);
       }
     }
     const elec = (_a = toNum(payload.pureElectricRange)) != null ? _a : toNum(payload.dynamicPureElectricRange);
@@ -175,8 +177,16 @@ class VehicleController {
   }
   applyConfirmation(data) {
     const result = (0, import_util.str)(data.result).trim();
-    const reason = Array.isArray(data.reason) && data.reason.length ? " \u2014 check failed" : "";
-    this.set("commands.result", `car reported result=${result || "?"}${reason}`);
+    const reason = Array.isArray(data.reason) ? data.reason : [];
+    const climateOnly = reason.length > 0 && reason.every((r) => !!r && typeof r === "object" && (0, import_util.str)(r.modelId) === "0");
+    let suffix = "";
+    if (reason.length && !climateOnly) {
+      suffix = " \u2014 check failed";
+    } else if (climateOnly) {
+      const codes = reason.map((r) => (0, import_util.str)(r.code)).filter(Boolean).join(", ");
+      suffix = codes ? ` (climate module reported code ${codes} \u2014 this is normal)` : "";
+    }
+    this.set("commands.result", `car reported result=${result || "?"}${suffix}`);
   }
   // ── REST probe / wake ────────────────────────────────────────────────────────
   /** Read realtime telemetry + GPS location (read-only, no wake). */

@@ -174,6 +174,8 @@ export class VehicleController {
                 if (v !== undefined) {
                     this.set(target.id, v);
                 }
+            } else if (target.volatile) {
+                this.set(target.id, null); // absent = no longer applicable, not "unchanged"
             }
         }
         // Total range = electric + petrol range (HA _range_totale); electric-only on a BEV.
@@ -187,8 +189,25 @@ export class VehicleController {
 
     private applyConfirmation(data: Record<string, unknown>): void {
         const result = str(data.result).trim();
-        const reason = Array.isArray(data.reason) && data.reason.length ? ' — check failed' : '';
-        this.set('commands.result', `car reported result=${result || '?'}${reason}`);
+        const reason = Array.isArray(data.reason) ? data.reason : [];
+        // The backend lists the climate module (modelId 0) in `reason` even on success — a code
+        // arrives on nearly every OFF command — so a climate-only reason is NOT a failure and
+        // must not raise the alarm. A malformed reason stays cautious and counts as a failure.
+        const climateOnly =
+            reason.length > 0 &&
+            reason.every(r => !!r && typeof r === 'object' && str((r as Record<string, unknown>).modelId) === '0');
+        let suffix = '';
+        if (reason.length && !climateOnly) {
+            suffix = ' — check failed';
+        } else if (climateOnly) {
+            // Keep the raw codes for diagnosis, but say plainly that this is expected.
+            const codes = reason
+                .map(r => str((r as Record<string, unknown>).code))
+                .filter(Boolean)
+                .join(', ');
+            suffix = codes ? ` (climate module reported code ${codes} — this is normal)` : '';
+        }
+        this.set('commands.result', `car reported result=${result || '?'}${suffix}`);
     }
 
     // ── REST probe / wake ────────────────────────────────────────────────────────

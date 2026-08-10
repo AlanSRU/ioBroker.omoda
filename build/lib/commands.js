@@ -108,7 +108,8 @@ const COMMAND_CATALOG = {
   // future — not yet exposed
   locate_car: { endpoint: "vehicleLocation", body: {}, name: "Locate car (GPS)", group: "Other" }
 };
-const NON_PIN_CODES = /* @__PURE__ */ new Set(["A00000"]);
+const SESSION_CODES = /* @__PURE__ */ new Set(["A00000"]);
+const CONFIG_CODES = /* @__PURE__ */ new Set(["A00374", "A00554", "A00567", "A00604", "A00643", "A00757"]);
 const TASKID_TTL_MS = 600 * 1e3;
 const PIN_FAIL_MAX = 2;
 const PIN_FAIL_WINDOW_MS = 600 * 1e3;
@@ -159,8 +160,15 @@ class CommandRunner {
       return (0, import_util.str)(tid);
     }
     const code = j.code != null ? (0, import_util.str)(j.code) : null;
-    if (code && NON_PIN_CODES.has(code)) {
+    if (code && SESSION_CODES.has(code)) {
       throw new CommandError("Session expired \u2014 request a new OTP from the adapter settings", code, "reauth");
+    }
+    if (code && CONFIG_CODES.has(code)) {
+      throw new CommandError(
+        `Command rejected \u2014 not a PIN problem: ${(0, import_constants.codeMeaning)(code, "vehicle permission or request problem")}`,
+        code,
+        "config"
+      );
     }
     this.pinFail.n += 1;
     this.pinFail.ts = now;

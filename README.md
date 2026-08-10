@@ -84,6 +84,14 @@ upstream project. All bugs in this ioBroker port are mine, not theirs.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+* (Alan Paris) Default "Dept ID" is now 44 (UK) instead of 39 (IT) — existing instances keep the value they already have (upstream 37f8f2b)
+* (Alan Paris) Fixed a stale "charge remaining time": the field vanishes from the payload when charging ends, so the state now clears instead of showing the last value for hours (upstream a0f61ed)
+* (Alan Paris) Command confirmations no longer cry "check failed" when the car reports only the climate module — the backend includes it on nearly every successful OFF command (upstream 2cc7d56)
+* (Alan Paris) Backend rejections caused by vehicle permissions or a malformed request (A00374/A00554/A00567/A00604/A00643/A00757) no longer count towards the wrong-PIN anti-lockout (upstream 8aa4176)
+* (Alan Paris) Correct state roles for info.model and info.brand; account email marked as protected
+* (Alan Paris) The charging/driving fast-follow poll now self-schedules, so a slow probe can no longer overlap the next one
+
 ### 0.1.1 (2026-07-18)
 * (Alan Paris) Security: never log the VIN or MQTT user id in cleartext (masked to a short suffix)
 * (Alan Paris) Fixed a leak of the car MQTT client and polling timers when re-logging in after a session drop

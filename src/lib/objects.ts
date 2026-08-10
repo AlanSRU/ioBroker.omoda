@@ -255,6 +255,12 @@ const num: Conv = v => {
 interface FieldTarget {
     id: string;
     conv: Conv;
+    /**
+     * The field disappears from the payload when it stops applying (rather than going to 0).
+     * Such a state must be cleared to null when absent — keeping the last value would leave a
+     * stale reading on display indefinitely.
+     */
+    volatile?: boolean;
 }
 
 /** 5A02 MQTT telemetry field → state (read-only status). */
@@ -288,7 +294,9 @@ export const RT_MAP: Record<string, FieldTarget> = {
     vehicleSpeed: { id: 'location.speed', conv: num },
     chargeState: { id: 'charging.state', conv: v => CHARGE_STATE_MAP[String(v)] ?? String(v) },
     chargingPower: { id: 'charging.power', conv: num },
-    remainChargeTime: { id: 'charging.remainingTime', conv: num },
+    // Vanishes from the payload once charging ends — without volatile it would show the last
+    // "N minutes remaining" for hours afterwards.
+    remainChargeTime: { id: 'charging.remainingTime', conv: num, volatile: true },
     lFrontTyreKpa: { id: 'tyres.frontLeftPressure', conv: num },
     rFrontTyreKpa: { id: 'tyres.frontRightPressure', conv: num },
     lRearTyreKpa: { id: 'tyres.rearLeftPressure', conv: num },
