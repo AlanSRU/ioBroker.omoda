@@ -144,6 +144,11 @@ class Omoda extends utils.Adapter {
                     return;
                 }
                 await ensureObjects(this, v);
+                // ensureObjects is ~61 sequential extendObject round-trips against the objects DB,
+                // so unload can easily land inside it — re-check before constructing a controller.
+                if (this.unloaded) {
+                    return;
+                }
                 let ctrl = this.controllers.get(v.id);
                 if (!ctrl) {
                     ctrl = new VehicleController(this, this.client, this.runtimeCfg, v, certs);
