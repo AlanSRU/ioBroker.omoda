@@ -17,6 +17,10 @@ Thumbs.db
 admin/i18n/flat.txt
 admin/i18n/*/flat.txt
 
+# Compiled output. Not tracked: CI rebuilds it (build: true on the adapter-tests and
+# deploy jobs) and npm packs it from `files`, so the committed copy was pure churn.
+build/
+
 # @iobroker/dev-server working directory (local-only, never commit)
 .dev-server/
 
