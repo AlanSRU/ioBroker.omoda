@@ -46,9 +46,20 @@ const STATES = [
     common: { name: "Vehicle online (MQTT)", type: "boolean", role: "indicator.reachable", ...ro() }
   },
   { id: "info.name", common: { name: "Name", type: "string", role: "info.name", ...ro() } },
-  { id: "info.model", common: { name: "Model", type: "string", role: "info.name", ...ro() } },
-  { id: "info.brand", common: { name: "Brand", type: "string", role: "info.name", ...ro() } },
-  { id: "info.powerType", common: { name: "Power type (0 = BEV)", type: "number", role: "value", ...ro() } },
+  { id: "info.model", common: { name: "Model", type: "string", role: "info.model", ...ro() } },
+  { id: "info.brand", common: { name: "Brand", type: "string", role: "text", ...ro() } },
+  // Chery never publishes the powerType code table and the queryList payload carries no label
+  // field, so no common.states here. Only the 0/non-zero split is verified: 0 = BEV (upstream),
+  // 1 = has a combustion engine (confirmed on an OMODA 9 SHS, which reports an engineNumber).
+  {
+    id: "info.powerType",
+    common: {
+      name: "Power type (0 = BEV, non-zero = has combustion engine)",
+      type: "number",
+      role: "value",
+      ...ro()
+    }
+  },
   { id: "info.lastUpdate", common: { name: "Last telemetry update", type: "number", role: "value.time", ...ro() } },
   { id: "info.sessionStatus", common: { name: "Session status", type: "string", role: "text", ...ro() } },
   // — location —

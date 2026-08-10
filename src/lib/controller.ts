@@ -34,7 +34,7 @@ export class VehicleController {
     private readonly cmd: CommandRunner;
     private keepaliveTimer?: ioBroker.Interval;
     private normalTimer?: ioBroker.Interval;
-    private followTimer?: ioBroker.Interval;
+    private followTimer?: ioBroker.Timeout;
     private followCount = 0;
     private followActive = false;
     private lastWakeMs = 0;
@@ -116,13 +116,13 @@ export class VehicleController {
 
     async stop(): Promise<void> {
         this.stopped = true;
-        for (const t of [this.keepaliveTimer, this.normalTimer, this.followTimer]) {
+        for (const t of [this.keepaliveTimer, this.normalTimer]) {
             if (t) {
                 this.adapter.clearInterval(t);
             }
         }
-        this.keepaliveTimer = this.normalTimer = this.followTimer = undefined;
-        this.followActive = false;
+        this.keepaliveTimer = this.normalTimer = undefined;
+        this.stopFollow();
         await this.mqtt?.close();
         this.mqtt = null;
     }
@@ -244,21 +244,28 @@ export class VehicleController {
         this.adapter.log.debug(
             `starting ${charging ? 'charging' : 'HV'} follow (every ${everyMs / 1000}s, cap ${cap})`,
         );
-        this.followTimer = this.adapter.setInterval(() => {
-            void (async () => {
-                this.followCount++;
-                const payload = await this.probe().catch(() => null);
-                const hvOn = payload ? toNum(payload.hVoltageState) === 1 : false;
-                if (this.stopped || this.followCount >= cap || !hvOn) {
-                    this.stopFollow();
-                }
-            })();
-        }, everyMs);
+        // self-scheduling timeout (not setInterval) so a slow probe can never overlap the next one
+        const scheduleNext = (): void => {
+            this.followTimer = this.adapter.setTimeout(() => {
+                this.followTimer = undefined;
+                void (async () => {
+                    this.followCount++;
+                    const payload = await this.probe().catch(() => null);
+                    const hvOn = payload ? toNum(payload.hVoltageState) === 1 : false;
+                    if (this.stopped || this.followCount >= cap || !hvOn) {
+                        this.stopFollow();
+                    } else {
+                        scheduleNext();
+                    }
+                })();
+            }, everyMs);
+        };
+        scheduleNext();
     }
 
     private stopFollow(): void {
         if (this.followTimer) {
-            this.adapter.clearInterval(this.followTimer);
+            this.adapter.clearTimeout(this.followTimer);
             this.followTimer = undefined;
         }
         this.followActive = false;

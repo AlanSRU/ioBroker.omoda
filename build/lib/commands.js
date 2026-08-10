@@ -43,6 +43,7 @@ const COMMAND_CATALOG = {
   // Doors / locks
   sblocca: { endpoint: "lockControl", body: { lockType: "1" }, name: "Unlock doors", group: "Access" },
   blocca: { endpoint: "lockControl", body: { lockType: "0" }, name: "Lock doors", group: "Access" },
+  // future — trunk not yet exposed
   baule_apri: { endpoint: "powerLiftgateControl", body: { controlType: "1" }, name: "Open trunk", group: "Access" },
   baule_chiudi: {
     endpoint: "powerLiftgateControl",
@@ -63,7 +64,7 @@ const COMMAND_CATALOG = {
     name: "Climate OFF",
     group: "Climate"
   },
-  // Windows / roof
+  // Windows / roof — future, not yet exposed
   finestrini_apri: { endpoint: "windowControl", body: { controlType: "1" }, name: "Open windows", group: "Windows" },
   finestrini_chiudi: {
     endpoint: "windowControl",
@@ -89,7 +90,7 @@ const COMMAND_CATALOG = {
     name: "Close sunroof",
     group: "Windows"
   },
-  // EV charging
+  // EV charging — future, not yet exposed
   ricarica_start: {
     endpoint: "chargeStartStopControl",
     body: { controlType: "1" },
@@ -104,6 +105,7 @@ const COMMAND_CATALOG = {
   },
   // Other
   find_car: { endpoint: "findCar", body: {}, name: "Find car (flash)", group: "Other" },
+  // future — not yet exposed
   locate_car: { endpoint: "vehicleLocation", body: {}, name: "Locate car (GPS)", group: "Other" }
 };
 const NON_PIN_CODES = /* @__PURE__ */ new Set(["A00000"]);

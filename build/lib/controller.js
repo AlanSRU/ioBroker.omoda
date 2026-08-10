@@ -109,13 +109,13 @@ class VehicleController {
   async stop() {
     var _a;
     this.stopped = true;
-    for (const t of [this.keepaliveTimer, this.normalTimer, this.followTimer]) {
+    for (const t of [this.keepaliveTimer, this.normalTimer]) {
       if (t) {
         this.adapter.clearInterval(t);
       }
     }
-    this.keepaliveTimer = this.normalTimer = this.followTimer = void 0;
-    this.followActive = false;
+    this.keepaliveTimer = this.normalTimer = void 0;
+    this.stopFollow();
     await ((_a = this.mqtt) == null ? void 0 : _a.close());
     this.mqtt = null;
   }
@@ -229,20 +229,26 @@ class VehicleController {
     this.adapter.log.debug(
       `starting ${charging ? "charging" : "HV"} follow (every ${everyMs / 1e3}s, cap ${cap})`
     );
-    this.followTimer = this.adapter.setInterval(() => {
-      void (async () => {
-        this.followCount++;
-        const payload = await this.probe().catch(() => null);
-        const hvOn = payload ? toNum(payload.hVoltageState) === 1 : false;
-        if (this.stopped || this.followCount >= cap || !hvOn) {
-          this.stopFollow();
-        }
-      })();
-    }, everyMs);
+    const scheduleNext = () => {
+      this.followTimer = this.adapter.setTimeout(() => {
+        this.followTimer = void 0;
+        void (async () => {
+          this.followCount++;
+          const payload = await this.probe().catch(() => null);
+          const hvOn = payload ? toNum(payload.hVoltageState) === 1 : false;
+          if (this.stopped || this.followCount >= cap || !hvOn) {
+            this.stopFollow();
+          } else {
+            scheduleNext();
+          }
+        })();
+      }, everyMs);
+    };
+    scheduleNext();
   }
   stopFollow() {
     if (this.followTimer) {
-      this.adapter.clearInterval(this.followTimer);
+      this.adapter.clearTimeout(this.followTimer);
       this.followTimer = void 0;
     }
     this.followActive = false;

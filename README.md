@@ -64,6 +64,11 @@ opened); otherwise the session is refreshed automatically.
 - Many values read `null` while the car is in standby; battery, speed and mileage update while
   **driving or charging**, or after pressing **Refresh full status** (which briefly wakes the car).
 - Waking the car is **rate-limited** by the backend, so the adapter enforces a cooldown.
+- The MQTT telemetry connection uses **mutual TLS**. The client certificate/key material and the
+  pinned CA ship with the adapter in `data/certs-store.json` (encrypted, as recovered by the
+  upstream HA integration) so the adapter works offline without a provisioning round-trip. If
+  Chery ever rotates the MQTT CA or client certs, that file has to be regenerated and a new
+  adapter version released — telemetry will fail to connect until then.
 
 ## Credits
 

@@ -103,6 +103,7 @@
     "pin"
   ],
   "protectedNative": [
+    "email",
     "pin",
     "otpCode"
   ],
