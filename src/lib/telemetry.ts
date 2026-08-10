@@ -97,6 +97,10 @@ export class MqttTelemetry {
         let reconnectMs = RECONNECT_BASE_MS;
         let errorLogged = false;
         let stableTimer: ioBroker.Timeout | undefined;
+        // Whether the broker accepted a CONNECT since the last attempt. Escalating only on
+        // 'connect' would never fire for a connection that never completes — stale pinned certs, a
+        // wrong mqttHost, a firewall, a rejected CONNACK — leaving a 10s TLS retry running forever.
+        let sawConnect = false;
 
         const setPeriod = (ms: number): void => {
             reconnectMs = ms;
@@ -105,8 +109,9 @@ export class MqttTelemetry {
 
         client.on('connect', () => {
             // If this connection drops straight away, mqtt will arm the escalated delay. This is
-            // what stops a fixed 10s flap when another client holds the same clientId (the
-            // official app, or a second integration on the same account) or the certs are stale.
+            // what stops a fixed 10s flap when another client holds the same clientId — the
+            // official app, or a second integration on the same account.
+            sawConnect = true;
             setPeriod(Math.min(reconnectMs * 2, RECONNECT_MAX_MS));
             this.opts.clearTimer(stableTimer);
             stableTimer = this.opts.setTimer(() => {
@@ -127,9 +132,14 @@ export class MqttTelemetry {
         client.on('close', () => {
             this.handlers.onConnected(false);
             // The retry for THIS close was already armed by mqtt from options.reconnectPeriod, so
-            // there is nothing to set here — just stop the pending "it held" reset.
+            // anything set here applies from the next drop onwards — which is exactly right for an
+            // attempt that never connected: the delay then grows 10, 20, 40, 80, 120s.
             this.opts.clearTimer(stableTimer);
             stableTimer = undefined;
+            if (!sawConnect) {
+                setPeriod(Math.min(reconnectMs * 2, RECONNECT_MAX_MS));
+            }
+            sawConnect = false;
         });
         client.on('error', err => {
             // A permanently failing connection would otherwise emit a warn per attempt (~8600/day).

@@ -150,7 +150,17 @@ export class VehicleController {
     }
 
     // ── state writers ────────────────────────────────────────────────────────────
+    /**
+     * All state writes funnel through here so a single `stopped` check covers them.
+     * A checkSession()/probe() can still be in flight for up to the 25s axios timeout when the
+     * instance is stopped or re-logs in; without this guard those resolve after onUnload has
+     * already written info.connection=false and write stale values back — and under compact mode
+     * the host process survives, so the flag would stay wrong.
+     */
     private set(id: string, val: ioBroker.StateValue): void {
+        if (this.stopped) {
+            return;
+        }
         void this.adapter.setState(`${this.vehicle.id}.${id}`, { val, ack: true });
     }
 
@@ -167,6 +177,9 @@ export class VehicleController {
      * flipping on the first one would tell the user to redo the OTP while telemetry still flows.
      */
     private reportSession(ok: boolean, detail: string): void {
+        if (this.stopped) {
+            return; // in-flight check resolving after stop() — see set()
+        }
         this.sessionFailures = ok ? 0 : this.sessionFailures + 1;
         if (ok) {
             void this.adapter.setState('info.connection', { val: true, ack: true });

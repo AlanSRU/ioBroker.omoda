@@ -366,8 +366,15 @@ export async function ensureObjects(adapter: ioBroker.Adapter, vehicle: Vehicle)
         common: { name: vehicle.name || vehicle.model || `Omoda ${vin}` },
         native: { vin: vehicle.vin },
     });
+    // extendObject, NOT setObjectNotExists: it creates when missing but also updates an existing
+    // object, which is what carries corrected metadata to instances created by an older version.
+    // With setObjectNotExists a role fix or a renamed state only ever reached fresh installs — an
+    // upgraded 0.1.1 instance would have kept `commands.lock` labelled "Lock (true) / unlock
+    // (false)" after the polarity was inverted, i.e. a door-lock control whose label states the
+    // opposite of what it does. extendObject merges, so user-owned `common.custom` (history/InfluxDB
+    // settings) survives; adapter-owned fields (name/role/type/read/write/unit/def) are refreshed.
     for (const ch of CHANNELS) {
-        await adapter.setObjectNotExistsAsync(`${vin}.${ch.id}`, {
+        await adapter.extendObjectAsync(`${vin}.${ch.id}`, {
             type: 'channel',
             common: { name: ch.name },
             native: {},
@@ -376,7 +383,7 @@ export async function ensureObjects(adapter: ioBroker.Adapter, vehicle: Vehicle)
     for (const st of STATES) {
         const t = st.common.type;
         const def = st.common.def ?? (t === 'boolean' ? false : t === 'number' ? 0 : t === 'string' ? '' : null);
-        await adapter.setObjectNotExistsAsync(`${vin}.${st.id}`, {
+        await adapter.extendObjectAsync(`${vin}.${st.id}`, {
             type: 'state',
             common: { ...st.common, def } as StateCommon,
             native: {},
