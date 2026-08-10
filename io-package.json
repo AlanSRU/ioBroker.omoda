@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "omoda",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "news": {
       "0.2.0": {
         "en": "BREAKING: commands.lock now follows the ioBroker switch.lock spec - true UNLOCKS the car, false locks it. Invert any script that wrote true to lock.\nFixed telemetry the car reports as null being stored as real values (doors.locked showing \"locked\", GPS jumping to 0/0)\ninfo.connection now returns to false when the session expires instead of staying true while polling silently failed\nObject definitions are now updated on upgrade, so corrected roles and labels reach existing instances\nCorrected the Dept ID help text in all languages - the default is 44 (UK), not 39\nThe OTP code is now encrypted at rest\nCar MQTT reconnects back off from 10 s to 2 min instead of retrying forever\nPorted upstream fixes: stale charge time, climate-only false alarm, PIN code classification",
