@@ -20,6 +20,7 @@ class Omoda extends utils.Adapter {
     private runtimeCfg!: RuntimeConfig;
     private controllers = new Map<string, VehicleController>();
     private starting = false;
+    private unloaded = false;
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({ ...options, name: 'omoda' });
@@ -106,7 +107,7 @@ class Omoda extends utils.Adapter {
 
     /** Discover vehicles and start a controller per VIN. Safe to call again after OTP login. */
     private async startVehicles(): Promise<void> {
-        if (this.starting) {
+        if (this.starting || this.unloaded) {
             return;
         }
         this.starting = true;
@@ -124,11 +125,24 @@ class Omoda extends utils.Adapter {
                 return;
             }
             const vehicles = await this.client.discoverVehicles();
+            if (this.unloaded) {
+                return;
+            }
             if (!vehicles.length) {
                 this.log.warn('No vehicles found on this account (queryList empty).');
                 return;
             }
             for (const v of vehicles) {
+                // Re-check after every await: this loop runs for tens of seconds (each REST call
+                // can take the full 25s axios timeout) and confirmOtp launches it un-awaited, so
+                // the instance can be stopped or restarted underneath us. onUnload has already
+                // cleared this.controllers, so without the guard we would build a NEW controller
+                // and open a real MQTT session that nothing would ever close — under compact:true
+                // the host process survives, and that orphan then fights the restarted instance
+                // for the same clientId in a permanent reconnect flap.
+                if (this.unloaded) {
+                    return;
+                }
                 await ensureObjects(this, v);
                 let ctrl = this.controllers.get(v.id);
                 if (!ctrl) {
@@ -137,6 +151,9 @@ class Omoda extends utils.Adapter {
                 }
                 await ctrl.start(tUserId);
                 void this.setState(`${v.id}.info.sessionStatus`, { val: 'Session active', ack: true });
+            }
+            if (this.unloaded) {
+                return;
             }
             void this.setState('info.connection', true, true);
             this.log.info(`Started ${vehicles.length} vehicle(s): ${vehicles.map(v => mask(v.vin)).join(', ')}`);
@@ -306,6 +323,9 @@ class Omoda extends utils.Adapter {
 
     private onUnload(callback: () => void): void {
         void (async () => {
+            // Set before awaiting anything: an in-flight startVehicles() must not resurrect
+            // controllers behind us (see the guards in startVehicles).
+            this.unloaded = true;
             try {
                 await Promise.all([...this.controllers.values()].map(c => c.stop()));
                 this.controllers.clear();
