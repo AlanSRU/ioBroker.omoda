@@ -85,6 +85,7 @@
       "type": "free",
       "license": "MIT"
     },
+    "nogit": true,
     "platform": "Javascript/Node.js",
     "icon": "omoda.png",
     "enabled": true,
