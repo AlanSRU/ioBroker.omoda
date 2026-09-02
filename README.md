@@ -1,4 +1,7 @@
-![Logo](admin/omoda.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="admin/omoda-lockup-dark.png">
+  <img src="admin/omoda-lockup.png" alt="OMODA | JAECOO" width="300">
+</picture>
 # ioBroker.omoda
 
 [![NPM version](https://img.shields.io/npm/v/iobroker.omoda.svg)](https://www.npmjs.com/package/iobroker.omoda)
