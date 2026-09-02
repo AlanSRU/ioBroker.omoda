@@ -113,6 +113,8 @@ upstream project. All bugs in this ioBroker port are mine, not theirs.
 ### 0.1.0 (2026-07-18)
 * (Alan Paris) initial release
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 MIT License
 
