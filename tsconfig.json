@@ -19,6 +19,16 @@
         // This is necessary for the automatic typing of the adapter config
         "resolveJsonModule": true,
 
+        // Declared explicitly because @tsconfig/node22 22.0.6 sets "types" to
+        // ["node"] itself, which switches off TypeScript's default of including
+        // every @types package it can find. Before that this project relied on
+        // that default to pick up mocha and chai transitively through
+        // @iobroker/testing, so the bump turned every `describe` and `expect`
+        // in the tests into TS2593 -- 39 of them. Listing them here, with the
+        // packages added as real devDependencies, means a future change to the
+        // base config or to npm's hoisting cannot take them away again.
+        "types": ["node", "iobroker", "mocha", "chai"],
+
         // If you want to disable the stricter type checks (not recommended), uncomment the following line
         // "strict": false,
         // And enable some of those features for more fine-grained control
