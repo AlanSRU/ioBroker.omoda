@@ -1,37 +1,42 @@
+# Dependabot configuration
+# Cooldown delays updating normal npm dependencies by 7 days but allows security updates to be processed immediately.
+# Note: Cooldown is not supported for the github-actions ecosystem.
+# Reference: https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
 version: 2
 updates:
-  - package-ecosystem: npm
-    directory: "/"
+
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      # Staggered monthly cron so the two ecosystems don't run at the same time (load distribution, S8906)
-      interval: cron
+      interval: 'cron'
       cronjob: '17 4 6 * *'
-      timezone: Europe/London
+      timezone: 'Europe/London'
     open-pull-requests-limit: 10
     cooldown:
       default-days: 7
     ignore:
-      # Defer major-version bumps of build/lint tooling — they routinely break
-      # @iobroker/adapter-dev / eslint-config / ts-node and need manual migration.
-      - dependency-name: "typescript"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@types/node"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "eslint"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@iobroker/eslint-config"
-        update-types: ["version-update:semver-major"]
-  - package-ecosystem: github-actions
-    directory: "/"
+      - dependency-name: 'typescript'
+        update-types:
+          - 'version-update:semver-major'
+      - dependency-name: '@types/node'
+        update-types:
+          - 'version-update:semver-major'
+      - dependency-name: 'eslint'
+        update-types:
+          - 'version-update:semver-major'
+      - dependency-name: '@iobroker/eslint-config'
+        update-types:
+          - 'version-update:semver-major'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: cron
+      interval: 'cron'
       cronjob: '43 5 13 * *'
-      timezone: Europe/London
+      timezone: 'Europe/London'
     cooldown:
       default-days: 7
     ignore:
-      # The ioBroker testing actions are pinned to floating major tags (@v1) that
-      # track upstream automatically; defer disruptive major (@v1 -> @v2) bumps so
-      # the published-and-working OIDC deploy job is never changed unattended.
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
+      - dependency-name: '*'
+        update-types:
+          - 'version-update:semver-major'
