@@ -88,7 +88,7 @@ upstream project. All bugs in this ioBroker port are mine, not theirs.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.3.0 (2026-09-27)
 * (Alan Paris) Requires admin >= 7.8.23 now
 * (Alan Paris) Tested with Node.js 26; updated @iobroker/testing to 6.x
 * (Alan Paris) New adapter icon (OMODA | JAECOO lockup) replacing the template placeholder
