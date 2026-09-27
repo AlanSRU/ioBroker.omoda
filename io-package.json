@@ -3,6 +3,19 @@
     "name": "omoda",
     "version": "0.2.0",
     "news": {
+      "0.3.0": {
+        "en": "Requires admin >= 7.8.23 now\nTested with Node.js 26; updated @iobroker/testing to 6.x\nNew adapter icon (OMODA | JAECOO lockup) replacing the template placeholder",
+        "de": "Benötigt jetzt admin >= 7.8.23\nMit Node.js 26 getestet; @iobroker/testing auf 6.x aktualisiert\nNeues Adapter-Symbol (OMODA | JAECOO Logo) ersetzt den Vorlagen-Platzhalter",
+        "ru": "Теперь требуется admin >= 7.8.23\nПротестировано с Node.js 26; @iobroker/testing обновлён до 6.x\nНовый значок адаптера (логотип OMODA | JAECOO) вместо шаблонной заглушки",
+        "pt": "Agora requer admin >= 7.8.23\nTestado com Node.js 26; @iobroker/testing atualizado para 6.x\nNovo ícone do adaptador (logótipo OMODA | JAECOO) substituindo o marcador do modelo",
+        "nl": "Vereist nu admin >= 7.8.23\nGetest met Node.js 26; @iobroker/testing bijgewerkt naar 6.x\nNieuw adapterpictogram (OMODA | JAECOO-logo) ter vervanging van de sjabloon-plaatshouder",
+        "fr": "Nécessite désormais admin >= 7.8.23\nTesté avec Node.js 26 ; @iobroker/testing mis à jour vers 6.x\nNouvelle icône d'adaptateur (logo OMODA | JAECOO) remplaçant l'icône provisoire du modèle",
+        "it": "Ora richiede admin >= 7.8.23\nTestato con Node.js 26; @iobroker/testing aggiornato a 6.x\nNuova icona dell'adattatore (logo OMODA | JAECOO) al posto del segnaposto del modello",
+        "es": "Ahora requiere admin >= 7.8.23\nProbado con Node.js 26; @iobroker/testing actualizado a 6.x\nNuevo icono del adaptador (logotipo OMODA | JAECOO) en sustitución del marcador de la plantilla",
+        "pl": "Wymaga teraz admin >= 7.8.23\nPrzetestowano z Node.js 26; zaktualizowano @iobroker/testing do 6.x\nNowa ikona adaptera (logo OMODA | JAECOO) zamiast zastępczej ikony z szablonu",
+        "uk": "Тепер потрібен admin >= 7.8.23\nПеревірено з Node.js 26; @iobroker/testing оновлено до 6.x\nНовий значок адаптера (логотип OMODA | JAECOO) замість шаблонної заглушки",
+        "zh-cn": "现在需要 admin >= 7.8.23\n已使用 Node.js 26 测试；@iobroker/testing 更新至 6.x\n新的适配器图标（OMODA | JAECOO 标志）取代模板占位图标"
+      },
       "0.2.0": {
         "en": "BREAKING: commands.lock now follows the ioBroker switch.lock spec - true UNLOCKS the car, false locks it. Invert any script that wrote true to lock.\nFixed telemetry the car reports as null being stored as real values (doors.locked showing \"locked\", GPS jumping to 0/0)\ninfo.connection now returns to false when the session expires instead of staying true while polling silently failed\nObject definitions are now updated on upgrade, so corrected roles and labels reach existing instances\nCorrected the Dept ID help text in all languages - the default is 44 (UK), not 39\nThe OTP code is now encrypted at rest\nCar MQTT reconnects back off from 10 s to 2 min instead of retrying forever\nPorted upstream fixes: stale charge time, climate-only false alarm, PIN code classification",
         "de": "BREAKING: commands.lock folgt jetzt der ioBroker-Spezifikation switch.lock - true ENTSPERRT das Auto, false verriegelt es. Skripte, die true zum Verriegeln geschrieben haben, muessen invertiert werden.\nTelemetriewerte, die das Auto als null meldet, werden nicht mehr als echte Werte gespeichert (doors.locked zeigte \"verriegelt\", GPS sprang auf 0/0)\ninfo.connection wird wieder false, wenn die Sitzung ablaeuft, statt true zu bleiben waehrend das Polling still fehlschlaegt\nObjektdefinitionen werden beim Update aktualisiert, damit korrigierte Rollen und Bezeichnungen bestehende Instanzen erreichen\nHilfetext zur Dept ID in allen Sprachen korrigiert - der Standard ist 44 (UK), nicht 39\nDer OTP-Code wird jetzt verschluesselt gespeichert\nMQTT-Neuverbindungen zum Auto warten jetzt 10 s bis 2 min statt endlos alle 10 s zu versuchen\nUpstream-Fixes portiert: veraltete Ladezeit, falscher Klima-Alarm, PIN-Code-Klassifizierung",
