@@ -70,4 +70,25 @@ export class TokenStore {
     getRefreshToken(): string | undefined {
         return pick(this.doc, 'refresh_token');
     }
+
+    /**
+     * Seconds since token.json was last written, and the access token's declared lifetime
+     * (`expires_in`). The token is opaque (not a JWT), so the file's mtime is the only record of
+     * when it was issued — it is rewritten on every mint/refresh (upstream wake._eta_token).
+     * Returns null when either is unknown.
+     */
+    async age(): Promise<{ ageSec: number; lifeSec: number } | null> {
+        try {
+            const st = await fs.stat(this.file);
+            await this.load();
+            const d = this.doc?.data && typeof this.doc.data === 'object' ? this.doc.data : this.doc;
+            const lifeSec = Number(d?.expires_in ?? 0);
+            if (!(lifeSec > 0)) {
+                return null;
+            }
+            return { ageSec: Math.max(0, (Date.now() - st.mtimeMs) / 1000), lifeSec };
+        } catch {
+            return null;
+        }
+    }
 }
