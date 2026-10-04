@@ -32,6 +32,8 @@ the official [Omoda / Jaecoo app](https://www.omoda.com/).
   charge plug connected, remaining charge time.
 - **Fuel** (hybrids / combustion only) — fuel remaining in litres, petrol range, average fuel
   consumption, low-fuel warning. The car reports litres, not a fuel-level percentage.
+- **Units** — ranges, odometer and speed in kilometres or miles (setting "Distance unit" on the
+  "Region & polling" tab; default km).
 - **Commands** — lock/unlock, climate on/off with a settable target temperature, request GPS
   location, find car (flash lights), and "wake & refresh full status".
 
@@ -94,6 +96,7 @@ integration has since moved to **[chery-connect-ha/omoda9-ha](https://github.com
 ### **WORK IN PROGRESS**
 * (Alan Paris) Added fuel states for hybrid/combustion cars: `fuel.remaining` (L), `fuel.range` (km), `fuel.averageConsumption` (L/100 km) and `fuel.lowWarning`. They are not created on a pure-electric car
 * (Alan Paris) Added `commands.findCar` — flashes the lights so you can find the car
+* (Alan Paris) New "Distance unit" setting: show ranges, odometer and speed in miles / mph instead of km / km/h. Existing history keeps the unit it was recorded in
 * (Alan Paris) Fixed the battery level and electric range jumping to wrong values (e.g. 97% instead of 82%, 0 km) while the car is parked with the high voltage off: such placeholder readings are now ignored and the last real values are kept
 * (Alan Paris) Fixed `battery.rangeTotal` dropping by the whole petrol range when a reading did not include it; on a pure-electric car it is now the electric range alone
 * (Alan Paris) `charging.power` is now cleared when charging ends instead of keeping the last value

@@ -16,6 +16,8 @@ export interface RuntimeConfig {
     pollNormalMin: number;
     sessionEverySec: number;
     wakeCooldownSec: number;
+    /** 'mi' shows ranges, odometer and speed in miles / mph; the car always reports km. */
+    distanceUnit: 'km' | 'mi';
 }
 
 /** Minimal logger surface (satisfied by ioBroker's `adapter.log`). */

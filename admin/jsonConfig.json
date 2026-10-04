@@ -243,6 +243,36 @@
                     "xs": 12,
                     "lg": 4,
                     "xl": 4
+                },
+                "_unitsHeader": {
+                    "type": "header",
+                    "text": "Units",
+                    "size": 5,
+                    "sm": 12,
+                    "xs": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "distanceUnit": {
+                    "type": "select",
+                    "label": "Distance unit",
+                    "help": "Applies to range, odometer and speed. Existing history keeps the unit it was recorded in.",
+                    "options": [
+                        {
+                            "label": "Kilometres (km, km/h)",
+                            "value": "km"
+                        },
+                        {
+                            "label": "Miles (mi, mph)",
+                            "value": "mi"
+                        }
+                    ],
+                    "sm": 12,
+                    "md": 4,
+                    "xs": 12,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         }

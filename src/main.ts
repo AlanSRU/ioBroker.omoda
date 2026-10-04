@@ -49,6 +49,7 @@ class Omoda extends utils.Adapter {
             pollNormalMin: c.pollNormalMin ? clamp(Number(c.pollNormalMin), 5, 10080, 60) : 0,
             sessionEverySec: clamp(Number(c.sessionEverySec), 60, 86400, 900),
             wakeCooldownSec: clamp(Number(c.wakeCooldownSec), 60, 86400, 300),
+            distanceUnit: c.distanceUnit === 'mi' ? 'mi' : 'km',
         };
     }
 
@@ -143,7 +144,7 @@ class Omoda extends utils.Adapter {
                 if (this.unloaded) {
                     return;
                 }
-                await ensureObjects(this, v);
+                await ensureObjects(this, v, this.runtimeCfg.distanceUnit);
                 // ensureObjects is ~61 sequential extendObject round-trips against the objects DB,
                 // so unload can easily land inside it — re-check before constructing a controller.
                 if (this.unloaded) {

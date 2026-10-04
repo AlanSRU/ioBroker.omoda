@@ -270,6 +270,24 @@ export const STATES: StateDef[] = [
     { id: 'commands.result', common: { name: 'Last command result', type: 'string', role: 'text', ...ro() } },
 ];
 
+// ── Distance unit ────────────────────────────────────────────────────────────────
+const KM_PER_MILE = 1.609344;
+/** Metric unit → imperial unit, for the states the "Distance unit" setting converts. */
+const MILES_UNIT: Record<string, string> = { km: 'mi', 'km/h': 'mph' };
+/** States reported by the car in km or km/h (ranges, odometer, speed). */
+export const DISTANCE_IDS = new Set(STATES.filter(s => s.common.unit && MILES_UNIT[s.common.unit]).map(s => s.id));
+
+/**
+ * A car value (km or km/h) in the configured unit. One decimal in miles: whole kilometres turn
+ * into fractional miles, and rounding to an integer would make a 1 km step invisible.
+ *
+ * @param km
+ * @param unit
+ */
+export function toDistanceUnit(km: number, unit: 'km' | 'mi'): number {
+    return unit === 'mi' ? Math.round((km / KM_PER_MILE) * 10) / 10 : km;
+}
+
 // ── Telemetry field maps ─────────────────────────────────────────────────────────────
 type Conv = (raw: unknown) => ioBroker.StateValue | undefined;
 
@@ -425,8 +443,13 @@ export const GEO_MAP: Record<string, FieldTarget> = {
  *
  * @param adapter
  * @param vehicle
+ * @param distanceUnit
  */
-export async function ensureObjects(adapter: ioBroker.Adapter, vehicle: Vehicle): Promise<void> {
+export async function ensureObjects(
+    adapter: ioBroker.Adapter,
+    vehicle: Vehicle,
+    distanceUnit: 'km' | 'mi' = 'km',
+): Promise<void> {
     const vin = vehicle.id; // sanitized id segment; real VIN kept in native for reference
     await adapter.setObjectNotExistsAsync(vin, {
         type: 'device',
@@ -459,9 +482,12 @@ export async function ensureObjects(adapter: ioBroker.Adapter, vehicle: Vehicle)
         }
         const t = st.common.type;
         const def = st.common.def ?? (t === 'boolean' ? false : t === 'number' ? 0 : t === 'string' ? '' : null);
+        // extendObject refreshes the unit, so switching the setting relabels existing states too.
+        const unit =
+            distanceUnit === 'mi' && st.common.unit ? (MILES_UNIT[st.common.unit] ?? st.common.unit) : st.common.unit;
         await adapter.extendObjectAsync(`${vin}.${st.id}`, {
             type: 'state',
-            common: { ...st.common, def } as StateCommon,
+            common: { ...st.common, def, unit } as StateCommon,
             native: {},
         });
     }

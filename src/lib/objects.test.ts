@@ -1,5 +1,14 @@
 import { expect } from 'chai';
-import { GEO_MAP, MQTT_MAP, RT_MAP, STATES, isDegradedFrame, totalRange } from './objects';
+import {
+    DISTANCE_IDS,
+    GEO_MAP,
+    MQTT_MAP,
+    RT_MAP,
+    STATES,
+    isDegradedFrame,
+    toDistanceUnit,
+    totalRange,
+} from './objects';
 
 /**
  * The state-role contract for every role this adapter uses, transcribed from
@@ -206,5 +215,24 @@ describe('objects/degraded frame and total range', () => {
     it('never writes a total from a degraded frame', () => {
         expect(totalRange({ pureElectricRange: '0', mileageSurplus: '215' }, false)).to.equal(undefined);
         expect(totalRange({ pureElectricRange: '0' }, true)).to.equal(undefined);
+    });
+});
+
+describe('objects/distance unit', () => {
+    it('converts exactly the ranges, odometer and speed', () => {
+        expect([...DISTANCE_IDS].sort()).to.deep.equal([
+            'battery.rangeElectric',
+            'battery.rangeTotal',
+            'fuel.range',
+            'location.speed',
+            'status.odometer',
+        ]);
+    });
+
+    it('converts km to miles with one decimal, and leaves km alone', () => {
+        expect(toDistanceUnit(100, 'mi')).to.equal(62.1);
+        expect(toDistanceUnit(1, 'mi')).to.equal(0.6);
+        expect(toDistanceUnit(0, 'mi')).to.equal(0);
+        expect(toDistanceUnit(215, 'km')).to.equal(215);
     });
 });

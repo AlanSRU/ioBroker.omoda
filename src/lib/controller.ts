@@ -13,7 +13,7 @@ import { clampTemperature, chooseAirDuration } from './climate';
 import { CommandRunner, CommandError } from './commands';
 import type { SignParams } from './crypto/sign';
 import type { CertSet } from './certs';
-import { GEO_MAP, MQTT_MAP, RT_MAP, isDegradedFrame, totalRange } from './objects';
+import { DISTANCE_IDS, GEO_MAP, MQTT_MAP, RT_MAP, isDegradedFrame, totalRange, toDistanceUnit } from './objects';
 import type { RuntimeConfig, Vehicle } from './types';
 import { CLOCK_KEYS, str, telemetryFingerprint } from './util';
 
@@ -166,6 +166,9 @@ export class VehicleController {
     private set(id: string, val: ioBroker.StateValue): void {
         if (this.stopped) {
             return;
+        }
+        if (typeof val === 'number' && DISTANCE_IDS.has(id)) {
+            val = toDistanceUnit(val, this.cfg.distanceUnit);
         }
         void this.adapter.setState(`${this.vehicle.id}.${id}`, { val, ack: true });
     }

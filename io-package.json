@@ -150,7 +150,8 @@
     "language": "en-GB",
     "pollNormalMin": 60,
     "sessionEverySec": 900,
-    "wakeCooldownSec": 300
+    "wakeCooldownSec": 300,
+    "distanceUnit": "km"
   },
   "objects": [],
   "instanceObjects": [
