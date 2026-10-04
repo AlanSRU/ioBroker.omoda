@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { OmodaClient } from './client';
 import { EP } from './constants';
 import type { TokenStore } from './tokenStore';
-import type { RuntimeConfig } from './types';
+import type { Logger, RuntimeConfig } from './types';
 
 const noopLog = { debug: () => undefined, info: () => undefined, warn: () => undefined, error: () => undefined };
 
@@ -30,11 +30,15 @@ class FakeTokens {
 type Reply = { status: number; data: unknown } | Error;
 
 /** Replaces the client's axios instance; counts requests per endpoint. */
-function client(tokens: FakeTokens, replies: (url: string) => Reply): { c: OmodaClient; calls: string[] } {
+function client(
+    tokens: FakeTokens,
+    replies: (url: string) => Reply,
+    log: Logger = noopLog,
+): { c: OmodaClient; calls: string[] } {
     const c = new OmodaClient(
         { bff: 'https://bff', channelId: '1' } as RuntimeConfig,
         tokens as unknown as TokenStore,
-        noopLog,
+        log,
     );
     const calls: string[] = [];
     (c as unknown as { http: unknown }).http = {
@@ -92,5 +96,21 @@ describe('client/session refresh', () => {
         expect(first.detail).to.contain('network');
         await c.checkSession();
         expect(refreshCalls(calls)).to.equal(2); // retried: not burnt
+    });
+
+    it('warns about a dead session once, not on every check', async () => {
+        const warns: string[] = [];
+        const log = { ...noopLog, warn: (m: string): void => void warns.push(m) };
+        const tokens = new FakeTokens({ access_token: 'AT1', refresh_token: 'RT1' });
+        const { c } = client(
+            tokens,
+            url => (url.includes(EP.token) ? { status: 200, data: { code: '1', msg: 'invalid_grant' } } : expired),
+            log,
+        );
+        for (let i = 0; i < 5; i++) {
+            await c.checkSession();
+        }
+        // login failure + first refresh rejection + "already rejected" — then silence
+        expect(warns.length).to.equal(3);
     });
 });

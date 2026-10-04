@@ -288,6 +288,31 @@ export function toDistanceUnit(km: number, unit: 'km' | 'mi'): number {
     return unit === 'mi' ? Math.round((km / KM_PER_MILE) * 10) / 10 : km;
 }
 
+/**
+ * Relabelling a unit leaves the stored value in the old one, and some states are deliberately not
+ * rewritten for a while (the range on a placeholder frame of a parked car) — "215 mi" for 215 km
+ * until the car next wakes. Convert the current value along with the label.
+ *
+ * @param adapter
+ * @param id
+ * @param unit the unit the state is about to get
+ */
+async function convertStoredValue(adapter: ioBroker.Adapter, id: string, unit: string | undefined): Promise<void> {
+    const obj = await adapter.getObjectAsync(id);
+    const from = obj?.common && 'unit' in obj.common ? obj.common.unit : undefined;
+    if (!from || !unit || from === unit) {
+        return;
+    }
+    const toMiles = MILES_UNIT[from] === unit;
+    const toKm = MILES_UNIT[unit] === from;
+    const st = await adapter.getStateAsync(id);
+    if ((!toMiles && !toKm) || typeof st?.val !== 'number') {
+        return;
+    }
+    const val = toMiles ? st.val / KM_PER_MILE : st.val * KM_PER_MILE;
+    await adapter.setState(id, { val: Math.round(val * 10) / 10, ack: true });
+}
+
 // ── Telemetry field maps ─────────────────────────────────────────────────────────────
 type Conv = (raw: unknown) => ioBroker.StateValue | undefined;
 
@@ -485,6 +510,9 @@ export async function ensureObjects(
         // extendObject refreshes the unit, so switching the setting relabels existing states too.
         const unit =
             distanceUnit === 'mi' && st.common.unit ? (MILES_UNIT[st.common.unit] ?? st.common.unit) : st.common.unit;
+        if (DISTANCE_IDS.has(st.id)) {
+            await convertStoredValue(adapter, `${vin}.${st.id}`, unit);
+        }
         await adapter.extendObjectAsync(`${vin}.${st.id}`, {
             type: 'state',
             common: { ...st.common, def, unit } as StateCommon,

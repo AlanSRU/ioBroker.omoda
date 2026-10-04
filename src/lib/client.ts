@@ -57,6 +57,11 @@ export class OmodaClient {
      * 'response'. 'network:' is NOT a revoked session, so it must not send the user for an OTP.
      */
     private refreshReason = { why: '', ts: 0 };
+    /**
+     * Login-failure messages already logged at warn since the last successful login. A dead
+     * session fails the same way on every keepalive and poll — warn once, then debug.
+     */
+    private warnedLogin = new Set<string>();
 
     constructor(
         private readonly cfg: RuntimeConfig,
@@ -170,7 +175,7 @@ export class OmodaClient {
         if (!d || !userToken) {
             const code = isPlainObject(j) ? str(j.code ?? j.error ?? '') : '';
             const msg = isPlainObject(j) ? str(j.msg ?? j.message ?? j.error_description ?? '') : '';
-            this.log.warn(
+            this.warnOnce(
                 `bffLogin: no userToken (HTTP ${r.status}, code=${code || '—'}, ` +
                     `dataKeys=${d ? Object.keys(d).join(',') || 'none' : 'no data'}, ` +
                     `hadAccessToken=${access ? 'yes' : 'no'}) [${this.region()}]`,
@@ -180,11 +185,12 @@ export class OmodaClient {
                 return {};
             }
             const renewed = await this.refreshToken(access);
-            this.log.warn(
+            this.warnOnce(
                 `bffLogin: automatic token refresh ${renewed ? 'succeeded' : `failed (${this.refreshReason.why || '?'})`}`,
             );
             return renewed ? this.bffLogin(false) : {};
         }
+        this.warnedLogin.clear(); // logged in: the next failure is news again
         const tUserId = d.tUserId != null ? str(d.tUserId) : undefined;
         if (!tUserId) {
             this.log.debug(
@@ -255,6 +261,15 @@ export class OmodaClient {
             this.log.debug(`token refresh failed: ${(e as Error).message}`);
             return this.refreshOutcome(false, `network:${(e as Error).name}`);
         }
+    }
+
+    private warnOnce(msg: string): void {
+        if (this.warnedLogin.has(msg)) {
+            this.log.debug(msg);
+            return;
+        }
+        this.warnedLogin.add(msg);
+        this.log.warn(msg);
     }
 
     private refreshOutcome(ok: boolean, why: string): boolean {

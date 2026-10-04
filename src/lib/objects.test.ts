@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import {
     DISTANCE_IDS,
     GEO_MAP,
+    ensureObjects,
     MQTT_MAP,
     RT_MAP,
     STATES,
@@ -234,5 +235,33 @@ describe('objects/distance unit', () => {
         expect(toDistanceUnit(1, 'mi')).to.equal(0.6);
         expect(toDistanceUnit(0, 'mi')).to.equal(0);
         expect(toDistanceUnit(215, 'km')).to.equal(215);
+    });
+
+    it('converts the stored value when the unit setting changes', async () => {
+        const objs: Record<string, { common: Record<string, unknown> }> = {
+            'V.battery.rangeTotal': { common: { unit: 'km' } },
+            'V.status.odometer': { common: { unit: 'mi' } },
+        };
+        const states: Record<string, { val: unknown }> = {
+            'V.battery.rangeTotal': { val: 215 },
+            'V.status.odometer': { val: 100 },
+        };
+        const adapter = {
+            setObjectNotExistsAsync: () => Promise.resolve(),
+            extendObjectAsync: (id: string, o: { common?: Record<string, unknown> }) => {
+                objs[id] = { common: { ...(objs[id]?.common ?? {}), ...(o.common ?? {}) } };
+                return Promise.resolve();
+            },
+            getObjectAsync: (id: string) => Promise.resolve(objs[id] ?? null),
+            getStateAsync: (id: string) => Promise.resolve(states[id] ?? null),
+            setState: (id: string, s: { val: unknown }) => {
+                states[id] = { val: s.val };
+                return Promise.resolve();
+            },
+        };
+        await ensureObjects(adapter as unknown as ioBroker.Adapter, { id: 'V', vin: 'V' }, 'mi');
+        expect(states['V.battery.rangeTotal'].val, 'km → mi').to.equal(133.6);
+        expect(states['V.status.odometer'].val, 'already mi').to.equal(100);
+        expect(objs['V.battery.rangeTotal'].common.unit).to.equal('mi');
     });
 });
