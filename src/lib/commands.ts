@@ -45,8 +45,8 @@ interface CommandDef {
 }
 
 /**
- * Full catalog (ported 1:1). Only `sblocca`/`blocca`, `clima_on`/`clima_off` and `locate_car` are
- * reachable today — via VehicleController.lock/climate/locate and their writable states. Every
+ * Full catalog (ported 1:1). Only `sblocca`/`blocca`, `clima_on`/`clima_off`, `locate_car` and `find_car` are
+ * reachable today — via VehicleController.lock/climate/locate/findCar and their writable states. Every
  * entry marked "future" below is a verified endpoint recipe kept for a later release; it is
  * intentionally not dead code, just not yet exposed as a state.
  */
@@ -115,7 +115,7 @@ export const COMMAND_CATALOG: Record<string, CommandDef> = {
         group: 'Charging',
     },
     // Other
-    find_car: { endpoint: 'findCar', body: {}, name: 'Find car (flash)', group: 'Other' }, // future — not yet exposed
+    find_car: { endpoint: 'findCar', body: {}, name: 'Find car (flash)', group: 'Other' },
     locate_car: { endpoint: 'vehicleLocation', body: {}, name: 'Locate car (GPS)', group: 'Other' },
 };
 

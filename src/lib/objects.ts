@@ -28,6 +28,7 @@ export const CHANNELS: ChannelDef[] = [
     { id: 'location', name: 'GPS location' },
     { id: 'battery', name: 'Battery & range' },
     { id: 'charging', name: 'Charging' },
+    { id: 'fuel', name: 'Fuel (combustion engine)' },
     { id: 'doors', name: 'Doors & locks' },
     { id: 'windows', name: 'Windows & sunroof' },
     { id: 'climate', name: 'Climate' },
@@ -115,6 +116,22 @@ export const STATES: StateDef[] = [
     },
 
     // — doors & locks —
+    // — fuel (realtime; not created on a confirmed BEV, see ensureObjects) —
+    // oilSurplus is litres, not a percentage: upstream confirmed it live (215 km − 60 km electric
+    // = 155 km on petrol / 23 L ≈ 15 L/100 km). The car reports no fuel-level percentage.
+    {
+        id: 'fuel.remaining',
+        common: { name: 'Fuel remaining', type: 'number', role: 'value.fill', unit: 'L', ...ro() },
+    },
+    {
+        id: 'fuel.range',
+        common: { name: 'Fuel range', type: 'number', role: 'value.distance', unit: 'km', ...ro() },
+    },
+    {
+        id: 'fuel.averageConsumption',
+        common: { name: 'Average fuel consumption', type: 'number', role: 'value', unit: 'L/100 km', ...ro() },
+    },
+    { id: 'fuel.lowWarning', common: { name: 'Low fuel warning', type: 'boolean', role: 'indicator.alarm', ...ro() } },
     { id: 'doors.frontLeft', common: { name: 'Door front left open', type: 'boolean', role: 'sensor.door', ...ro() } },
     {
         id: 'doors.frontRight',
@@ -243,6 +260,10 @@ export const STATES: StateDef[] = [
         common: { name: 'Request GPS location', type: 'boolean', role: 'button', read: false, write: true },
     },
     {
+        id: 'commands.findCar',
+        common: { name: 'Find car (flash lights)', type: 'boolean', role: 'button', read: false, write: true },
+    },
+    {
         id: 'commands.refreshStatus',
         common: { name: 'Wake & refresh full status', type: 'boolean', role: 'button', read: false, write: true },
     },
@@ -323,10 +344,14 @@ export const RT_MAP: Record<string, FieldTarget> = {
         // str() rejects objects/symbols/functions safely; '' then means "not reported".
         conv: v => {
             const s = str(v).trim();
-            return s === '' ? undefined : (CHARGE_STATE_MAP[s] ?? s);
+            // The car sends a float string ('1.0'); without stripping the '.0' the lookup always
+            // missed and the raw number was shown instead of the label (upstream a985ec4).
+            const key = s.endsWith('.0') ? s.slice(0, -2) : s;
+            return s === '' ? undefined : (CHARGE_STATE_MAP[key] ?? s);
         },
     },
-    chargingPower: { id: 'charging.power', conv: num },
+    // Only sent while charging (upstream ac605fa): absent means not charging, so clear it.
+    chargingPower: { id: 'charging.power', conv: num, volatile: true },
     // Vanishes from the payload once charging ends — without volatile it would show the last
     // "N minutes remaining" for hours afterwards.
     remainChargeTime: { id: 'charging.remainingTime', conv: num, volatile: true },
@@ -338,7 +363,49 @@ export const RT_MAP: Record<string, FieldTarget> = {
     rFrontTyreTemp: { id: 'tyres.frontRightTemp', conv: num },
     lRearTyreTemp: { id: 'tyres.rearLeftTemp', conv: num },
     rRearTyreTemp: { id: 'tyres.rearRightTemp', conv: num },
+    oilSurplus: { id: 'fuel.remaining', conv: num },
+    // Petrol-only range, NOT the total: it stays put while the electric range drains (upstream).
+    mileageSurplus: { id: 'fuel.range', conv: num },
+    averageFuel: { id: 'fuel.averageConsumption', conv: num },
+    oilCall: { id: 'fuel.lowWarning', conv: boolNonZero },
 };
+
+/**
+ * Electric range of a realtime frame, with RT_MAP's precedence for battery.rangeElectric:
+ * dynamicPureElectricRange is written last there and therefore wins. Upstream checks
+ * pureElectricRange first; deciding differently here would let the total and the degraded
+ * check disagree with the state actually shown.
+ */
+function electricRange(payload: Record<string, unknown>): number | undefined {
+    return toNumStrict(payload.dynamicPureElectricRange) ?? toNumStrict(payload.pureElectricRange);
+}
+
+/**
+ * A frame with 0 km electric range is a placeholder served while the high voltage is off, not a
+ * reading — and its dumpEnergy is wrong too (97% shown against 82% real). Upstream measured this
+ * on every 0 km frame over 10 days; a real 0 would need the battery below ~8%, which a PHEV never
+ * reaches because it keeps a reserve for the hybrid. Keep the last SoC/range (upstream a316a23).
+ */
+export function isDegradedFrame(payload: Record<string, unknown>): boolean {
+    return electricRange(payload) === 0;
+}
+
+/**
+ * Total range = electric + petrol (mileageSurplus); electric only on a confirmed BEV. undefined =
+ * leave the state alone. A missing petrol range must NOT count as 0: on a PHEV that dropped the
+ * total by ~150 km for a frame. Only the declared powerType makes a car "no tank" (upstream ac605fa).
+ */
+export function totalRange(payload: Record<string, unknown>, isBev: boolean): number | undefined {
+    if (isDegradedFrame(payload)) {
+        return undefined; // summing the placeholder 0 km collapsed the total overnight
+    }
+    const elec = electricRange(payload);
+    if (isBev) {
+        return elec;
+    }
+    const fuel = toNumStrict(payload.mileageSurplus);
+    return elec === undefined || fuel === undefined ? undefined : elec + fuel;
+}
 
 /** GPS geo fields (1301 push / realtime) → location states. */
 export const GEO_MAP: Record<string, FieldTarget> = {
@@ -373,7 +440,13 @@ export async function ensureObjects(adapter: ioBroker.Adapter, vehicle: Vehicle)
     // (false)" after the polarity was inverted, i.e. a door-lock control whose label states the
     // opposite of what it does. extendObject merges, so user-owned `common.custom` (history/InfluxDB
     // settings) survives; adapter-owned fields (name/role/type/read/write/unit/def) are refreshed.
+    // On a confirmed BEV (powerType 0) the fuel states would stay empty forever; unknown
+    // powerType keeps them, as upstream does.
+    const isBev = vehicle.powerType === 0;
     for (const ch of CHANNELS) {
+        if (isBev && ch.id === 'fuel') {
+            continue;
+        }
         await adapter.extendObjectAsync(`${vin}.${ch.id}`, {
             type: 'channel',
             common: { name: ch.name },
@@ -381,6 +454,9 @@ export async function ensureObjects(adapter: ioBroker.Adapter, vehicle: Vehicle)
         });
     }
     for (const st of STATES) {
+        if (isBev && st.id.startsWith('fuel.')) {
+            continue;
+        }
         const t = st.common.type;
         const def = st.common.def ?? (t === 'boolean' ? false : t === 'number' ? 0 : t === 'string' ? '' : null);
         await adapter.extendObjectAsync(`${vin}.${st.id}`, {

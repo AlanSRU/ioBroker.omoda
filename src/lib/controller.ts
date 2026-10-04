@@ -1,7 +1,7 @@
 /*
  * controller.ts — per-VIN runtime: owns the MQTT telemetry client, the REST probe/wake,
  * the polling timers, and the command runner. The ioBroker equivalent of coordinator.py,
- * condensed for the MVP scope (read-only telemetry + lock + climate + locate + refresh).
+ * condensed for the MVP scope (read-only telemetry + lock + climate + locate + find car + refresh).
  *
  * Timers use the adapter's framework-managed setInterval/setTimeout so they are tracked and
  * cleared on unload; stop() also clears them explicitly and closes MQTT.
@@ -11,9 +11,9 @@ import { OmodaClient } from './client';
 import { MqttTelemetry } from './telemetry';
 import { CommandRunner, CommandError } from './commands';
 import type { CertSet } from './certs';
-import { GEO_MAP, MQTT_MAP, RT_MAP } from './objects';
+import { GEO_MAP, MQTT_MAP, RT_MAP, isDegradedFrame, totalRange } from './objects';
 import type { RuntimeConfig, Vehicle } from './types';
-import { str } from './util';
+import { CLOCK_KEYS, str, telemetryFingerprint } from './util';
 
 /** Consecutive failed session checks before info.connection is reported false. */
 const SESSION_FAIL_MAX = 2;
@@ -47,6 +47,8 @@ export class VehicleController {
     private lastWakeMs = 0;
     private stopped = false;
     private sessionFailures = 0;
+    /** Content fingerprint of the last realtime frame; undefined until the first probe. */
+    private lastFingerprint?: string;
 
     constructor(
         private readonly adapter: ioBroker.Adapter,
@@ -202,6 +204,8 @@ export class VehicleController {
                 }
             }
         }
+        // A 5A02 push is the car itself speaking now, never a cloud cache — so it is fresh by
+        // definition, unlike the realtime probe (updateFreshness).
         this.set('info.lastUpdate', Date.now());
         this.maybeStartFollow(fields);
     }
@@ -225,7 +229,15 @@ export class VehicleController {
     }
 
     private applyRealtime(payload: Record<string, unknown>): void {
+        const isBev = this.vehicle.powerType === 0;
+        const degraded = isDegradedFrame(payload);
         for (const [key, target] of Object.entries(RT_MAP)) {
+            if (isBev && target.id.startsWith('fuel.')) {
+                continue; // no fuel objects on a BEV (ensureObjects)
+            }
+            if (degraded && (target.id === 'battery.soc' || target.id === 'battery.rangeElectric')) {
+                continue; // placeholder frame: keep the last real SoC/range (isDegradedFrame)
+            }
             if (key in payload) {
                 const v = target.conv(payload[key]);
                 if (v !== undefined) {
@@ -236,15 +248,37 @@ export class VehicleController {
             }
         }
         // Total range = electric + petrol range (HA _range_totale); electric-only on a BEV.
-        // Precedence must match RT_MAP's for battery.rangeElectric, where dynamicPureElectricRange
-        // is written last and therefore wins. Taking pureElectricRange first here produced a
-        // "total" range BELOW the electric range whenever both fields were present.
-        const elec = toNum(payload.dynamicPureElectricRange) ?? toNum(payload.pureElectricRange);
-        if (elec !== undefined) {
-            const fuel = toNum(payload.mileageSurplus) ?? 0;
-            this.set('battery.rangeTotal', elec + fuel);
+        // electricRange() keeps RT_MAP's precedence (dynamicPureElectricRange wins): taking
+        // pureElectricRange first produced a "total" BELOW the electric range.
+        const total = totalRange(payload, isBev);
+        if (total !== undefined) {
+            this.set('battery.rangeTotal', total);
         }
-        this.set('info.lastUpdate', Date.now());
+        this.updateFreshness(payload);
+    }
+
+    /**
+     * info.lastUpdate = when the car's data last CHANGED. The cloud answers the realtime probe
+     * from cache, so a parked car returned the same frame every poll and Date.now() made hours-old
+     * data look fresh; resultTime is no better — upstream measured it lagging while values really
+     * changed (upstream 3c7ced3). So compare content, ignoring the clock fields.
+     */
+    private updateFreshness(payload: Record<string, unknown>): void {
+        const fp = telemetryFingerprint(payload);
+        if (this.lastFingerprint === undefined) {
+            // First frame since start: nothing to compare with. Use the car's own timestamp (ms)
+            // rather than passing possibly hours-old data off as "now".
+            for (const k of CLOCK_KEYS) {
+                const ts = toNum(payload[k]);
+                if (ts) {
+                    this.set('info.lastUpdate', Math.trunc(ts));
+                    break;
+                }
+            }
+        } else if (fp !== this.lastFingerprint) {
+            this.set('info.lastUpdate', Date.now());
+        }
+        this.lastFingerprint = fp;
     }
 
     private applyConfirmation(data: Record<string, unknown>): void {
@@ -362,6 +396,10 @@ export class VehicleController {
 
     async locate(): Promise<string> {
         return this.cmd.send('locate_car');
+    }
+
+    async findCar(): Promise<string> {
+        return this.cmd.send('find_car');
     }
 
     /**

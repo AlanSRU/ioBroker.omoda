@@ -227,6 +227,12 @@ class Omoda extends utils.Adapter {
                     }
                     void this.setState(id, { val: false, ack: true });
                     break;
+                case 'commands.findCar':
+                    if (state.val) {
+                        result = await ctrl.findCar();
+                    }
+                    void this.setState(id, { val: false, ack: true });
+                    break;
                 case 'commands.refreshStatus':
                     if (state.val) {
                         await ctrl.wakeAndProbe();
