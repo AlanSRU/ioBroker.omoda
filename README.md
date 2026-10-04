@@ -88,6 +88,11 @@ upstream project. All bugs in this ioBroker port are mine, not theirs.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+* (Alan Paris) Climate run time now uses one of the durations the car allows (`maxAirDuration` is a set such as "5,10,15", not a maximum) instead of always sending 15 minutes (upstream 97b3edf)
+* (Alan Paris) An implausible climate temperature range from the backend is now ignored instead of applied, and the target temperature is clamped into the car's range before a climate ON is sent (upstream ac605fa)
+* (Alan Paris) A command answered with A00567 (taskId invalid) now re-mints the taskId and retries once, like A00089/A00546
+
 ### 0.3.0 (2026-09-27)
 * (Alan Paris) Requires admin >= 7.8.23 now
 * (Alan Paris) Tested with Node.js 26; updated @iobroker/testing to 6.x

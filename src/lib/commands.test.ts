@@ -64,6 +64,18 @@ describe('commands/CommandRunner', () => {
         expect(out).to.contain('Lock doors');
     });
 
+    it('re-mints once when the car answers a command with A00567 (taskId invalid)', async () => {
+        const fc = new FakeClient();
+        fc.checkPasswordQueue = [{ data: { taskId: 'T1' } }, { data: { taskId: 'T2' } }];
+        fc.tspQueue = [
+            { status: 200, code: 'A00567', json: { code: 'A00567' } },
+            { status: 200, code: '000000', json: {} },
+        ];
+        const out = await runner(fc).send('blocca');
+        expect(checkPwCount(fc)).to.equal(2);
+        expect(out).to.contain('Lock doors');
+    });
+
     // The backend has no documented "wrong PIN" code — a wrong PIN falls through to the default
     // branch, so an unrecognised code is what exercises it. A00567 is NOT that: it means
     // "incomplete checkPassword parameters", i.e. a request-construction fault (see CONFIG_CODES).

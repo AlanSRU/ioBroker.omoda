@@ -2,7 +2,7 @@
  * commands.ts — catalog + dispatch of Omoda / Jaecoo car commands (tspconsole REST).
  * Port of core/commands.py. Preserves the safety-critical behaviour:
  *   - taskId minted via queryList → setVecDefault → checkPassword(sm4(md5(pin)), scene=0)
- *   - taskId cache/TTL + one re-mint retry on A00089/A00546
+ *   - taskId cache/TTL + one re-mint retry on A00089/A00546/A00567
  *   - PIN ANTI-LOCKOUT: stop after N wrong checkPassword within a window (a wrong command PIN
  *     can lock the Chery account) — never guess the PIN
  *   - command QUEUE: the car runs one command at a time (A00082), so sends are serialized
@@ -260,8 +260,10 @@ export class CommandRunner {
             const res = await this.client.signedTspPost(userToken, path, body, 'okhttp/4.9.2');
             const code = res.code;
 
-            // Cached taskId no longer valid → drop it and re-mint once.
-            if ((code === 'A00089' || code === 'A00546') && attempt === 1) {
+            // Cached taskId no longer valid → drop it and re-mint once. A00567 belongs here too in
+            // reply to a COMMAND ("taskId invalid"); only from checkPassword is it a config fault
+            // (upstream routing.py).
+            if ((code === 'A00089' || code === 'A00546' || code === 'A00567') && attempt === 1) {
                 this.invalidateTaskId();
                 continue;
             }
@@ -273,7 +275,7 @@ export class CommandRunner {
             }
             return out;
         }
-        // Both attempts exhausted without success (only reachable via repeated A00089/A00546).
+        // Both attempts exhausted without success (only reachable via repeated A00089/A00546/A00567).
         throw new CommandError(`${c.name}: taskId rejected twice`, 'A00089', 'pin');
     }
 }

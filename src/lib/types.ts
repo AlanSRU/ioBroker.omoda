@@ -47,6 +47,8 @@ export interface Vehicle {
     climateMinTemp?: number;
     climateMaxTemp?: number;
     climateTempStep?: number;
+    /** Allowed climate durations in minutes (queryList `maxAirDuration`, a set — not a maximum). */
+    climateDurations?: number[];
 }
 
 /** Result of a signed TSP call. */
