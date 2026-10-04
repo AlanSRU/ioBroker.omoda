@@ -93,7 +93,7 @@ integration has since moved to **[chery-connect-ha/omoda9-ha](https://github.com
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.4.0 (2026-10-04)
 * (Alan Paris) Added fuel states for hybrid/combustion cars: `fuel.remaining` (L), `fuel.range` (km), `fuel.averageConsumption` (L/100 km) and `fuel.lowWarning`. They are not created on a pure-electric car
 * (Alan Paris) Added `commands.findCar` — flashes the lights so you can find the car
 * (Alan Paris) New "Distance unit" setting: show ranges, odometer and speed in miles / mph instead of km / km/h. Existing history keeps the unit it was recorded in

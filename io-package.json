@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "omoda",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "news": {
       "0.4.0": {
         "en": "New fuel states for hybrid/combustion cars and a find-car (flash lights) command\nNew setting to show range, odometer and speed in miles\nRefusals that are not a wrong PIN (car busy, asleep, no permission) no longer count towards the PIN lockout\nMore reliable session: tokens renewed before they expire, rejected tokens not resent, network errors no longer ask for a new OTP\nFixed wrong battery level/range from placeholder readings, total range drops, stale charging power and climate run time",
