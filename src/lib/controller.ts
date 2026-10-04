@@ -9,7 +9,9 @@
 import { EP, TIMING } from './constants';
 import { OmodaClient } from './client';
 import { MqttTelemetry } from './telemetry';
+import { clampTemperature, chooseAirDuration } from './climate';
 import { CommandRunner, CommandError } from './commands';
+import type { SignParams } from './crypto/sign';
 import type { CertSet } from './certs';
 import { GEO_MAP, MQTT_MAP, RT_MAP, isDegradedFrame, totalRange } from './objects';
 import type { RuntimeConfig, Vehicle } from './types';
@@ -17,6 +19,8 @@ import { CLOCK_KEYS, str, telemetryFingerprint } from './util';
 
 /** Consecutive failed session checks before info.connection is reported false. */
 const SESSION_FAIL_MAX = 2;
+/** Wanted climate run time in minutes; adjusted to the car's allowed set before sending. */
+const CLIMATE_DURATION_MIN = 15;
 
 /** Same strictness as objects.toNumStrict: null/'' mean "not reported", never 0. */
 function toNum(v: unknown): number | undefined {
@@ -390,7 +394,14 @@ export class VehicleController {
     }
 
     async climate(on: boolean, temperatureC?: number): Promise<string> {
-        const params = on && temperatureC != null ? { temperature: temperatureC.toFixed(1) } : undefined;
+        const v = this.vehicle;
+        // `times` must be one of the car's allowed durations, not just <= a maximum (upstream 97b3edf).
+        const params: SignParams = { times: String(chooseAirDuration(CLIMATE_DURATION_MIN, v.climateDurations)) };
+        if (on && temperatureC != null) {
+            // The state's min/max only guide UIs — a script can still write anything, so clamp here.
+            const t = clampTemperature(temperatureC, v.climateMinTemp, v.climateMaxTemp);
+            params.temperature = t.toFixed(1);
+        }
         return this.cmd.send(on ? 'clima_on' : 'clima_off', params);
     }
 

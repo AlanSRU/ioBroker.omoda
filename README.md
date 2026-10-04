@@ -104,6 +104,9 @@ integration has since moved to **[chery-connect-ha/omoda9-ha](https://github.com
 * (Alan Paris) The session is renewed silently when the login reply has no user token, instead of asking for a new OTP (upstream 92a57b3)
 * (Alan Paris) The access token is renewed before it expires, not after (upstream 3c7ced3)
 * (Alan Paris) A network failure during token renewal is reported as a network error, not as "request a new OTP"; login failures now log the HTTP status, error code and region
+* (Alan Paris) Climate run time now uses one of the durations the car allows (`maxAirDuration` is a set such as "5,10,15", not a maximum) instead of always sending 15 minutes (upstream 97b3edf)
+* (Alan Paris) An implausible climate temperature range from the backend is now ignored instead of applied, and the target temperature is clamped into the car's range before a climate ON is sent (upstream ac605fa)
+* (Alan Paris) A command answered with A00567 (taskId invalid) now re-mints the taskId and retries once, like A00089/A00546
 
 ### 0.3.0 (2026-09-27)
 * (Alan Paris) Requires admin >= 7.8.23 now

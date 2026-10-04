@@ -13,6 +13,7 @@
  */
 import { createHash } from 'node:crypto';
 import axios, { type AxiosInstance } from 'axios';
+import { plausibleClimateRange, parseAirDurations } from './climate';
 import { APP_BASIC, APP_VERSION, EP, SIGN_SECRET } from './constants';
 import { bffSign, marketingSign, marketingSignVals, tspAuthHeaders, tspSignBody, type SignParams } from './crypto/sign';
 import { sm4Code } from './crypto/sm4';
@@ -575,6 +576,7 @@ export class OmodaClient {
             const v = item[k];
             return typeof v === 'number' && !Number.isNaN(v) ? v : undefined;
         };
+        const range = plausibleClimateRange(num('minTemperature'), num('maxTemperature'), num('temperatureStepLength'));
         return {
             vin,
             id: sanitizeId(vin),
@@ -582,9 +584,10 @@ export class OmodaClient {
             model: full ? titleCase(full) : undefined,
             brand: full || nick ? deriveBrand(full || nick) : undefined,
             powerType: typeof item.powerType === 'number' ? item.powerType : undefined,
-            climateMinTemp: num('minTemperature'),
-            climateMaxTemp: num('maxTemperature'),
-            climateTempStep: num('temperatureStepLength'),
+            climateMinTemp: range.min,
+            climateMaxTemp: range.max,
+            climateTempStep: range.step,
+            climateDurations: parseAirDurations(item.maxAirDuration),
         };
     }
 
