@@ -1,7 +1,7 @@
 /*
  * controller.ts — per-VIN runtime: owns the MQTT telemetry client, the REST probe/wake,
  * the polling timers, and the command runner. The ioBroker equivalent of coordinator.py,
- * condensed for the MVP scope (read-only telemetry + lock + climate + locate + refresh).
+ * condensed for the MVP scope (read-only telemetry + lock + climate + locate + find car + refresh).
  *
  * Timers use the adapter's framework-managed setInterval/setTimeout so they are tracked and
  * cleared on unload; stop() also clears them explicitly and closes MQTT.
@@ -225,7 +225,11 @@ export class VehicleController {
     }
 
     private applyRealtime(payload: Record<string, unknown>): void {
+        const isBev = this.vehicle.powerType === 0;
         for (const [key, target] of Object.entries(RT_MAP)) {
+            if (isBev && target.id.startsWith('fuel.')) {
+                continue; // no fuel objects on a BEV (ensureObjects)
+            }
             if (key in payload) {
                 const v = target.conv(payload[key]);
                 if (v !== undefined) {
@@ -362,6 +366,10 @@ export class VehicleController {
 
     async locate(): Promise<string> {
         return this.cmd.send('locate_car');
+    }
+
+    async findCar(): Promise<string> {
+        return this.cmd.send('find_car');
     }
 
     /**

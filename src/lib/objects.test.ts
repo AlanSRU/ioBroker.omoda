@@ -22,6 +22,7 @@ interface RoleRule {
 const ROLE_RULES: Record<string, RoleRule> = {
     button: { types: ['boolean'], read: false, write: true },
     indicator: { types: ['boolean'], read: true, write: false },
+    'indicator.alarm': { types: ['boolean'], read: true, write: false },
     'indicator.reachable': { types: ['boolean'], read: true, write: false },
     'info.model': { types: ['string'], read: true, write: false },
     'info.name': { types: ['string'], read: true },
@@ -34,6 +35,7 @@ const ROLE_RULES: Record<string, RoleRule> = {
     value: { types: ['number'], read: true, write: false },
     'value.battery': { types: ['number'], read: true, write: false },
     'value.distance': { types: ['number'], read: true, write: false },
+    'value.fill': { types: ['number'], read: true, write: false },
     'value.gps.latitude': { types: ['number'], read: true, write: false },
     'value.gps.longitude': { types: ['number'], read: true, write: false },
     'value.power': { types: ['number'], read: true, write: false },

@@ -28,6 +28,7 @@ export const CHANNELS: ChannelDef[] = [
     { id: 'location', name: 'GPS location' },
     { id: 'battery', name: 'Battery & range' },
     { id: 'charging', name: 'Charging' },
+    { id: 'fuel', name: 'Fuel (combustion engine)' },
     { id: 'doors', name: 'Doors & locks' },
     { id: 'windows', name: 'Windows & sunroof' },
     { id: 'climate', name: 'Climate' },
@@ -115,6 +116,22 @@ export const STATES: StateDef[] = [
     },
 
     // — doors & locks —
+    // — fuel (realtime; not created on a confirmed BEV, see ensureObjects) —
+    // oilSurplus is litres, not a percentage: upstream confirmed it live (215 km − 60 km electric
+    // = 155 km on petrol / 23 L ≈ 15 L/100 km). The car reports no fuel-level percentage.
+    {
+        id: 'fuel.remaining',
+        common: { name: 'Fuel remaining', type: 'number', role: 'value.fill', unit: 'L', ...ro() },
+    },
+    {
+        id: 'fuel.range',
+        common: { name: 'Fuel range', type: 'number', role: 'value.distance', unit: 'km', ...ro() },
+    },
+    {
+        id: 'fuel.averageConsumption',
+        common: { name: 'Average fuel consumption', type: 'number', role: 'value', unit: 'L/100 km', ...ro() },
+    },
+    { id: 'fuel.lowWarning', common: { name: 'Low fuel warning', type: 'boolean', role: 'indicator.alarm', ...ro() } },
     { id: 'doors.frontLeft', common: { name: 'Door front left open', type: 'boolean', role: 'sensor.door', ...ro() } },
     {
         id: 'doors.frontRight',
@@ -243,6 +260,10 @@ export const STATES: StateDef[] = [
         common: { name: 'Request GPS location', type: 'boolean', role: 'button', read: false, write: true },
     },
     {
+        id: 'commands.findCar',
+        common: { name: 'Find car (flash lights)', type: 'boolean', role: 'button', read: false, write: true },
+    },
+    {
         id: 'commands.refreshStatus',
         common: { name: 'Wake & refresh full status', type: 'boolean', role: 'button', read: false, write: true },
     },
@@ -338,6 +359,11 @@ export const RT_MAP: Record<string, FieldTarget> = {
     rFrontTyreTemp: { id: 'tyres.frontRightTemp', conv: num },
     lRearTyreTemp: { id: 'tyres.rearLeftTemp', conv: num },
     rRearTyreTemp: { id: 'tyres.rearRightTemp', conv: num },
+    oilSurplus: { id: 'fuel.remaining', conv: num },
+    // Petrol-only range, NOT the total: it stays put while the electric range drains (upstream).
+    mileageSurplus: { id: 'fuel.range', conv: num },
+    averageFuel: { id: 'fuel.averageConsumption', conv: num },
+    oilCall: { id: 'fuel.lowWarning', conv: boolNonZero },
 };
 
 /** GPS geo fields (1301 push / realtime) → location states. */
@@ -373,7 +399,13 @@ export async function ensureObjects(adapter: ioBroker.Adapter, vehicle: Vehicle)
     // (false)" after the polarity was inverted, i.e. a door-lock control whose label states the
     // opposite of what it does. extendObject merges, so user-owned `common.custom` (history/InfluxDB
     // settings) survives; adapter-owned fields (name/role/type/read/write/unit/def) are refreshed.
+    // On a confirmed BEV (powerType 0) the fuel states would stay empty forever; unknown
+    // powerType keeps them, as upstream does.
+    const isBev = vehicle.powerType === 0;
     for (const ch of CHANNELS) {
+        if (isBev && ch.id === 'fuel') {
+            continue;
+        }
         await adapter.extendObjectAsync(`${vin}.${ch.id}`, {
             type: 'channel',
             common: { name: ch.name },
@@ -381,6 +413,9 @@ export async function ensureObjects(adapter: ioBroker.Adapter, vehicle: Vehicle)
         });
     }
     for (const st of STATES) {
+        if (isBev && st.id.startsWith('fuel.')) {
+            continue;
+        }
         const t = st.common.type;
         const def = st.common.def ?? (t === 'boolean' ? false : t === 'number' ? 0 : t === 'string' ? '' : null);
         await adapter.extendObjectAsync(`${vin}.${st.id}`, {
