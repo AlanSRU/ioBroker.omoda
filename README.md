@@ -94,6 +94,11 @@ integration has since moved to **[chery-connect-ha/omoda9-ha](https://github.com
 ### **WORK IN PROGRESS**
 * (Alan Paris) Added fuel states for hybrid/combustion cars: `fuel.remaining` (L), `fuel.range` (km), `fuel.averageConsumption` (L/100 km) and `fuel.lowWarning`. They are not created on a pure-electric car
 * (Alan Paris) Added `commands.findCar` — flashes the lights so you can find the car
+* (Alan Paris) Fixed the battery level and electric range jumping to wrong values (e.g. 97% instead of 82%, 0 km) while the car is parked with the high voltage off: such placeholder readings are now ignored and the last real values are kept
+* (Alan Paris) Fixed `battery.rangeTotal` dropping by the whole petrol range when a reading did not include it; on a pure-electric car it is now the electric range alone
+* (Alan Paris) `charging.power` is now cleared when charging ends instead of keeping the last value
+* (Alan Paris) Fixed `charging.state` showing a raw number like `1.0` instead of "Charging"
+* (Alan Paris) `info.lastUpdate` now changes only when the car's data actually changes, so a parked car's cached data no longer looks fresh on every poll
 
 ### 0.3.0 (2026-09-27)
 * (Alan Paris) Requires admin >= 7.8.23 now

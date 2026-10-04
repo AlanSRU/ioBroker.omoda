@@ -344,10 +344,14 @@ export const RT_MAP: Record<string, FieldTarget> = {
         // str() rejects objects/symbols/functions safely; '' then means "not reported".
         conv: v => {
             const s = str(v).trim();
-            return s === '' ? undefined : (CHARGE_STATE_MAP[s] ?? s);
+            // The car sends a float string ('1.0'); without stripping the '.0' the lookup always
+            // missed and the raw number was shown instead of the label (upstream a985ec4).
+            const key = s.endsWith('.0') ? s.slice(0, -2) : s;
+            return s === '' ? undefined : (CHARGE_STATE_MAP[key] ?? s);
         },
     },
-    chargingPower: { id: 'charging.power', conv: num },
+    // Only sent while charging (upstream ac605fa): absent means not charging, so clear it.
+    chargingPower: { id: 'charging.power', conv: num, volatile: true },
     // Vanishes from the payload once charging ends — without volatile it would show the last
     // "N minutes remaining" for hours afterwards.
     remainChargeTime: { id: 'charging.remainingTime', conv: num, volatile: true },
@@ -365,6 +369,43 @@ export const RT_MAP: Record<string, FieldTarget> = {
     averageFuel: { id: 'fuel.averageConsumption', conv: num },
     oilCall: { id: 'fuel.lowWarning', conv: boolNonZero },
 };
+
+/**
+ * Electric range of a realtime frame, with RT_MAP's precedence for battery.rangeElectric:
+ * dynamicPureElectricRange is written last there and therefore wins. Upstream checks
+ * pureElectricRange first; deciding differently here would let the total and the degraded
+ * check disagree with the state actually shown.
+ */
+function electricRange(payload: Record<string, unknown>): number | undefined {
+    return toNumStrict(payload.dynamicPureElectricRange) ?? toNumStrict(payload.pureElectricRange);
+}
+
+/**
+ * A frame with 0 km electric range is a placeholder served while the high voltage is off, not a
+ * reading — and its dumpEnergy is wrong too (97% shown against 82% real). Upstream measured this
+ * on every 0 km frame over 10 days; a real 0 would need the battery below ~8%, which a PHEV never
+ * reaches because it keeps a reserve for the hybrid. Keep the last SoC/range (upstream a316a23).
+ */
+export function isDegradedFrame(payload: Record<string, unknown>): boolean {
+    return electricRange(payload) === 0;
+}
+
+/**
+ * Total range = electric + petrol (mileageSurplus); electric only on a confirmed BEV. undefined =
+ * leave the state alone. A missing petrol range must NOT count as 0: on a PHEV that dropped the
+ * total by ~150 km for a frame. Only the declared powerType makes a car "no tank" (upstream ac605fa).
+ */
+export function totalRange(payload: Record<string, unknown>, isBev: boolean): number | undefined {
+    if (isDegradedFrame(payload)) {
+        return undefined; // summing the placeholder 0 km collapsed the total overnight
+    }
+    const elec = electricRange(payload);
+    if (isBev) {
+        return elec;
+    }
+    const fuel = toNumStrict(payload.mileageSurplus);
+    return elec === undefined || fuel === undefined ? undefined : elec + fuel;
+}
 
 /** GPS geo fields (1301 push / realtime) → location states. */
 export const GEO_MAP: Record<string, FieldTarget> = {

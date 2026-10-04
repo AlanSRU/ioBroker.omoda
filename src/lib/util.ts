@@ -1,4 +1,5 @@
 /* Small shared helpers. */
+import { createHash } from 'node:crypto';
 
 /** Clamp a number into [min, max]; NaN → fallback. */
 export function clamp(v: number, min: number, max: number, fallback: number): number {
@@ -39,4 +40,31 @@ export function str(v: unknown): string {
         return String(v);
     }
     return '';
+}
+
+/** Clock fields of a realtime frame: they change on every answer even when the data does not. */
+export const CLOCK_KEYS = ['resultTime', 'collectTime', 'time', 'updateTime'];
+
+function withoutClocks(o: unknown): unknown {
+    if (Array.isArray(o)) {
+        return o.map(withoutClocks);
+    }
+    if (o && typeof o === 'object') {
+        const src = o as Record<string, unknown>;
+        // keys sorted so the same content always serialises the same way (json sort_keys)
+        return Object.fromEntries(
+            Object.keys(src)
+                .filter(k => !CLOCK_KEYS.includes(k))
+                .sort()
+                .map(k => [k, withoutClocks(src[k])]),
+        );
+    }
+    return o;
+}
+
+/** sha256 of the telemetry CONTENT: changes only when a real value changes (upstream 3c7ced3). */
+export function telemetryFingerprint(payload: Record<string, unknown>): string {
+    return createHash('sha256')
+        .update(JSON.stringify(withoutClocks(payload)))
+        .digest('hex');
 }

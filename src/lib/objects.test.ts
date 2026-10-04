@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { GEO_MAP, MQTT_MAP, RT_MAP, STATES } from './objects';
+import { GEO_MAP, MQTT_MAP, RT_MAP, STATES, isDegradedFrame, totalRange } from './objects';
 
 /**
  * The state-role contract for every role this adapter uses, transcribed from
@@ -158,5 +158,53 @@ describe('objects/telemetry converters reject unreported values', () => {
         expect(MQTT_MAP.frontLeftDoor.conv('0'), 'door closed').to.equal(false);
         expect(GEO_MAP.lat.conv(0), 'latitude 0 is a real coordinate').to.equal(0);
         expect(RT_MAP.odometer.conv('0'), 'odometer 0').to.equal(0);
+    });
+});
+
+describe('objects/realtime charging fields', () => {
+    it('labels chargeState sent as a float string', () => {
+        expect(RT_MAP.chargeState.conv('1.0')).to.equal('Charging');
+        expect(RT_MAP.chargeState.conv('0.0')).to.equal('Not charging');
+        expect(RT_MAP.chargeState.conv(2)).to.equal('Charging completed');
+        expect(RT_MAP.chargeState.conv('7.0'), 'unknown code keeps the raw value').to.equal('7.0');
+    });
+
+    it('clears chargingPower when absent, like remainChargeTime', () => {
+        expect(RT_MAP.chargingPower.volatile).to.equal(true);
+        expect(RT_MAP.remainChargeTime.volatile).to.equal(true);
+    });
+});
+
+describe('objects/degraded frame and total range', () => {
+    it('treats a 0 km electric range as a placeholder frame', () => {
+        expect(isDegradedFrame({ pureElectricRange: '0', dumpEnergy: '97' })).to.equal(true);
+        expect(isDegradedFrame({ dynamicPureElectricRange: '0.0' })).to.equal(true);
+        expect(isDegradedFrame({ pureElectricRange: '12' })).to.equal(false);
+        expect(isDegradedFrame({}), 'no range reported is not a placeholder').to.equal(false);
+    });
+
+    it('decides with the same precedence as battery.rangeElectric (dynamic wins)', () => {
+        expect(isDegradedFrame({ pureElectricRange: 0, dynamicPureElectricRange: 50 })).to.equal(false);
+        expect(isDegradedFrame({ pureElectricRange: 50, dynamicPureElectricRange: 0 })).to.equal(true);
+        expect(
+            totalRange({ pureElectricRange: 40, dynamicPureElectricRange: 50, mileageSurplus: 200 }, false),
+        ).to.equal(250);
+    });
+
+    it('sums electric + petrol on a non-BEV, and only when both are reported', () => {
+        expect(totalRange({ pureElectricRange: '60', mileageSurplus: '215' }, false)).to.equal(275);
+        expect(totalRange({ pureElectricRange: '60' }, false), 'missing petrol is not 0').to.equal(undefined);
+        expect(totalRange({ pureElectricRange: '60', mileageSurplus: '' }, false)).to.equal(undefined);
+        expect(totalRange({ mileageSurplus: '215' }, false)).to.equal(undefined);
+    });
+
+    it('uses the electric range alone on a confirmed BEV', () => {
+        expect(totalRange({ pureElectricRange: '300' }, true)).to.equal(300);
+        expect(totalRange({}, true)).to.equal(undefined);
+    });
+
+    it('never writes a total from a degraded frame', () => {
+        expect(totalRange({ pureElectricRange: '0', mileageSurplus: '215' }, false)).to.equal(undefined);
+        expect(totalRange({ pureElectricRange: '0' }, true)).to.equal(undefined);
     });
 });
