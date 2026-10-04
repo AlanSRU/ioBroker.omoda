@@ -11,6 +11,7 @@
  * The BFF "always returns HTTP 200" for these calls; the real outcome is in the JSON `code`
  * or the presence of a `data` object. We therefore never let axios throw on status.
  */
+import { createHash } from 'node:crypto';
 import axios, { type AxiosInstance } from 'axios';
 import { APP_BASIC, APP_VERSION, EP, SIGN_SECRET } from './constants';
 import { bffSign, marketingSign, marketingSignVals, tspAuthHeaders, tspSignBody, type SignParams } from './crypto/sign';
@@ -31,9 +32,30 @@ function titleCase(s: string): string {
     return s.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
 
+/**
+ * Don't resend a refresh_token the server has already rejected for this long. A revoked token
+ * does not come back to life — only an OTP fixes it — and hammering the auth endpoint with
+ * rejected credentials is what gateways sanction (upstream measured 5 identical rejections in
+ * 6 minutes, for ~10 hours). Still retried hourly in case the rejection was a server blip.
+ */
+const REFRESH_RETRY_AFTER_MS = 3600 * 1000;
+/** Renew proactively once the access token has used this share of its life (upstream session.py). */
+const RENEW_AT_SHARE = 0.8;
+/** A refresh outcome older than this belongs to another attempt (upstream _MOTIVO_FRESCO_S). */
+const REFRESH_REASON_FRESH_MS = 60 * 1000;
+
+const fingerprint = (token: string): string => createHash('sha256').update(token).digest('hex');
+
 export class OmodaClient {
     private readonly http: AxiosInstance;
     private refreshInFlight: Promise<boolean> | null = null;
+    /** Fingerprint of the refresh_token the server last rejected, and when. */
+    private burntRefresh = { fp: '', ts: 0 };
+    /**
+     * Why the last refresh failed: '' ok · 'absent' · 'network:<Type>' · 'rejected:<key>' ·
+     * 'response'. 'network:' is NOT a revoked session, so it must not send the user for an OTP.
+     */
+    private refreshReason = { why: '', ts: 0 };
 
     constructor(
         private readonly cfg: RuntimeConfig,
@@ -139,21 +161,31 @@ export class OmodaClient {
         });
         const j = r.data;
         const d = isPlainObject(j) && isPlainObject(j.data) ? j.data : null;
-        if (!d) {
+        const userToken = d && typeof d.userToken === 'string' && d.userToken ? d.userToken : undefined;
+        // Gate the refresh on a missing userToken, not only on a missing `data`: a `data` of {} or
+        // a structured error body used to skip the silent refresh and go straight to "request a new
+        // OTP" (upstream 92a57b3). Logged at warn — without it a 401, a 424 and an empty `data` all
+        // reach the user as the same sentence. Only non-identifying fields: status, code, key names.
+        if (!d || !userToken) {
             const code = isPlainObject(j) ? str(j.code ?? j.error ?? '') : '';
             const msg = isPlainObject(j) ? str(j.msg ?? j.message ?? j.error_description ?? '') : '';
-            this.log.debug(
-                `bffLogin: no data (HTTP ${r.status}, code=${code || '—'}, msg=${msg || '—'}, ` +
-                    `hadAccessToken=${access ? 'yes' : 'no'}, willRefresh=${allowRefresh})`,
+            this.log.warn(
+                `bffLogin: no userToken (HTTP ${r.status}, code=${code || '—'}, ` +
+                    `dataKeys=${d ? Object.keys(d).join(',') || 'none' : 'no data'}, ` +
+                    `hadAccessToken=${access ? 'yes' : 'no'}) [${this.region()}]`,
             );
-            if (allowRefresh && (await this.refreshToken(access))) {
-                return this.bffLogin(false);
+            this.log.debug(`bffLogin: msg=${msg || '—'}`);
+            if (!allowRefresh) {
+                return {};
             }
-            return {};
+            const renewed = await this.refreshToken(access);
+            this.log.warn(
+                `bffLogin: automatic token refresh ${renewed ? 'succeeded' : `failed (${this.refreshReason.why || '?'})`}`,
+            );
+            return renewed ? this.bffLogin(false) : {};
         }
-        const userToken = typeof d.userToken === 'string' ? d.userToken : undefined;
         const tUserId = d.tUserId != null ? str(d.tUserId) : undefined;
-        if (!userToken || !tUserId) {
+        if (!tUserId) {
             this.log.debug(
                 `bffLogin: data present but incomplete (userToken=${userToken ? 'yes' : 'no'}, ` +
                     `tUserId=${tUserId ? 'yes' : 'no'}, dataKeys=${Object.keys(d).join(',')})`,
@@ -187,7 +219,12 @@ export class OmodaClient {
         }
         const rt = this.tokens.getRefreshToken();
         if (!rt) {
-            return false;
+            return this.refreshOutcome(false, 'absent');
+        }
+        // Clears by itself as soon as a different refresh_token lands on disk (new OTP).
+        const fp = fingerprint(rt);
+        if (fp === this.burntRefresh.fp && Date.now() - this.burntRefresh.ts < REFRESH_RETRY_AFTER_MS) {
+            return this.refreshOutcome(false, 'rejected:already_rejected');
         }
         const qs = new URLSearchParams({ grant_type: 'refresh_token', refresh_token: rt, scope: 'server' }).toString();
         const headers = this.headersPost(EP.token);
@@ -203,13 +240,49 @@ export class OmodaClient {
                 this.log.debug(
                     `token refresh: no access_token (HTTP ${r.status}, code=${code || '—'}, msg=${msg || '—'})`,
                 );
-                return false;
+                if (!isPlainObject(j)) {
+                    return this.refreshOutcome(false, 'response');
+                }
+                this.burntRefresh = { fp, ts: Date.now() };
+                const key = str(j.key ?? j.msg ?? j.error ?? '?').slice(0, 40);
+                return this.refreshOutcome(false, `rejected:${key}`);
             }
             await this.tokens.save(j as Record<string, unknown>);
-            return true;
+            return this.refreshOutcome(true, '');
         } catch (e) {
+            // Network failure: the request never got an answer, so the token is NOT burnt.
             this.log.debug(`token refresh failed: ${(e as Error).message}`);
-            return false;
+            return this.refreshOutcome(false, `network:${(e as Error).name}`);
+        }
+    }
+
+    private refreshOutcome(ok: boolean, why: string): boolean {
+        this.refreshReason = { why, ts: Date.now() };
+        return ok;
+    }
+
+    /** Region in use, for login-failure logs: the usual cause on a first login from a new country. */
+    private region(): string {
+        const c = this.cfg;
+        return `bff=${c.bff} tenant=${c.tenant} country=${c.countryId} channel=${c.channelId} lang=${c.language}`;
+    }
+
+    /**
+     * Proactive renewal once the access token has used RENEW_AT_SHARE of its life. The reactive
+     * refresh only fires after the token has died — up to a session-check interval late, with the
+     * refresh window already closing (upstream session.refresh_se_prossimo_a_scadere). Never
+     * throws: it is an optimisation and must not break the session check.
+     */
+    private async refreshIfNearExpiry(): Promise<void> {
+        try {
+            const a = await this.tokens.age();
+            if (!a || a.ageSec < a.lifeSec * RENEW_AT_SHARE) {
+                return;
+            }
+            const ok = await this.refreshToken();
+            this.log.debug(`proactive token refresh ${ok ? 'succeeded' : `failed (${this.refreshReason.why})`}`);
+        } catch (e) {
+            this.log.debug(`proactive token refresh error: ${(e as Error).message}`);
         }
     }
 
@@ -218,10 +291,17 @@ export class OmodaClient {
         ok: boolean;
         detail: string;
     }> {
+        await this.refreshIfNearExpiry();
         try {
             const { userToken } = await this.bffLogin();
             if (userToken) {
                 return { ok: true, detail: 'Session active' };
+            }
+            // If the refresh never reached the server, the session may well still be alive —
+            // telling the user to redo the OTP would burn one for a network blip.
+            const r = this.refreshReason;
+            if (r.why.startsWith('network:') && Date.now() - r.ts < REFRESH_REASON_FRESH_MS) {
+                return { ok: false, detail: `network error during token refresh: ${r.why.slice(8)}` };
             }
             return { ok: false, detail: 'Session expired — request a new OTP (close the official app first)' };
         } catch (e) {

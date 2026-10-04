@@ -108,6 +108,25 @@ describe('commands/CommandRunner', () => {
         expect(checkPwCount(fc)).to.equal(3);
     });
 
+    it('does not count busy/asleep/permission answers towards the lockout', async () => {
+        const fc = new FakeClient();
+        // Each would have burned an attempt before, so the third would be blocked locally and
+        // the user told their (correct) PIN was wrong.
+        const codes = ['A00084', 'A00082', 'A07900', 'A07312', 'A00089', 'A00546', '000000'];
+        fc.checkPasswordQueue = codes.map(code => ({ code }));
+        const r = runner(fc);
+        for (const code of codes) {
+            try {
+                await r.send('blocca');
+                expect.fail('expected CommandError');
+            } catch (e) {
+                expect(e).to.be.instanceOf(CommandError);
+                expect((e as CommandError).reason, code).to.equal(code === 'A00084' ? 'config' : null);
+            }
+        }
+        expect(checkPwCount(fc)).to.equal(codes.length);
+    });
+
     it('blocks after repeated wrong PINs (anti-lockout) before hitting the account', async () => {
         const fc = new FakeClient();
         fc.checkPasswordQueue = [{ code: 'A09999' }, { code: 'A09999' }, { code: 'A09999' }];

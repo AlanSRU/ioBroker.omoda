@@ -99,6 +99,11 @@ integration has since moved to **[chery-connect-ha/omoda9-ha](https://github.com
 * (Alan Paris) `charging.power` is now cleared when charging ends instead of keeping the last value
 * (Alan Paris) Fixed `charging.state` showing a raw number like `1.0` instead of "Charging"
 * (Alan Paris) `info.lastUpdate` now changes only when the car's data actually changes, so a parked car's cached data no longer looks fresh on every poll
+* (Alan Paris) A command refused because the car is busy, asleep, out of wake requests or not permitted no longer counts as a wrong PIN — before, two such refusals blocked commands and asked you to re-enter a correct PIN (upstream 46ab54e)
+* (Alan Paris) A refresh token the server has rejected is no longer resent on every poll; it is retried at most hourly until a new OTP is entered (upstream 3c7ced3)
+* (Alan Paris) The session is renewed silently when the login reply has no user token, instead of asking for a new OTP (upstream 92a57b3)
+* (Alan Paris) The access token is renewed before it expires, not after (upstream 3c7ced3)
+* (Alan Paris) A network failure during token renewal is reported as a network error, not as "request a new OTP"; login failures now log the HTTP status, error code and region
 
 ### 0.3.0 (2026-09-27)
 * (Alan Paris) Requires admin >= 7.8.23 now

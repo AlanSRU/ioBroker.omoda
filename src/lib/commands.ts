@@ -126,7 +126,14 @@ const SESSION_CODES = new Set(['A00000']);
  * a wrong PIN, so they must not burn anti-lockout attempts either — counting them would push the
  * account towards a real lockout over something the PIN cannot fix.
  */
-const CONFIG_CODES = new Set(['A00374', 'A00554', 'A00567', 'A00604', 'A00643', 'A00757']);
+const CONFIG_CODES = new Set(['A00084', 'A00374', 'A00554', 'A00567', 'A00604', 'A00643', 'A00757']);
+/**
+ * checkPassword answers that are the car or backend refusing for now (busy, asleep, wake quota,
+ * taskId churn) or an "OK" with no taskId. None says the PIN is wrong, so none may burn an
+ * anti-lockout attempt. Only codes outside every known set count — a wrong PIN has no reliable
+ * code of its own (upstream routing.py, 46ab54e).
+ */
+const NOT_PIN_CODES = new Set(['000000', 'A00079', 'A00082', 'A07312', 'A07900', 'A00089', 'A00546']);
 const TASKID_TTL_MS = 600 * 1000;
 const PIN_FAIL_MAX = 2;
 const PIN_FAIL_WINDOW_MS = 600 * 1000;
@@ -190,6 +197,10 @@ export class CommandRunner {
             return str(tid);
         }
         const code = j.code != null ? str(j.code) : null;
+        // The raw code/message is the only way to tell a wrong PIN from anything else — the
+        // lockout below is an inference. Neither field carries the PIN or a token.
+        const msg = str(j.message ?? j.msg ?? '').slice(0, 100);
+        this.log.warn(`checkPassword returned no taskId: code=${code ?? 'none'}${msg ? ` '${msg}'` : ''}`);
         if (code && SESSION_CODES.has(code)) {
             throw new CommandError('Session expired — request a new OTP from the adapter settings', code, 'reauth');
         }
@@ -198,6 +209,12 @@ export class CommandRunner {
                 `Command rejected — not a PIN problem: ${codeMeaning(code, 'vehicle permission or request problem')}`,
                 code,
                 'config',
+            );
+        }
+        if (code && NOT_PIN_CODES.has(code)) {
+            throw new CommandError(
+                `Command not accepted right now — not a PIN problem: ${codeMeaning(code, 'try again later')}`,
+                code,
             );
         }
         this.pinFail.n += 1;
