@@ -3,6 +3,19 @@
     "name": "omoda",
     "version": "0.4.0",
     "news": {
+      "0.5.0": {
+        "en": "Scheduled charging: let the car charge only in a chosen window, e.g. a night tariff\nNew start/stop charging commands (not allowed on every car)",
+        "de": "Geplantes Laden: Das Auto lädt nur in einem gewählten Zeitfenster, z. B. im Nachttarif\nNeue Befehle zum Starten/Stoppen des Ladens (nicht bei jedem Auto erlaubt)",
+        "ru": "Зарядка по расписанию: автомобиль заряжается только в выбранное время, например по ночному тарифу\nНовые команды запуска/остановки зарядки (разрешены не на всех автомобилях)",
+        "pt": "Carregamento agendado: o carro carrega apenas numa janela escolhida, p. ex. numa tarifa noturna\nNovos comandos para iniciar/parar o carregamento (não permitidos em todos os carros)",
+        "nl": "Gepland laden: de auto laadt alleen in een gekozen tijdvak, bijv. een nachttarief\nNieuwe opdrachten om laden te starten/stoppen (niet op elke auto toegestaan)",
+        "fr": "Recharge programmée : la voiture ne recharge que dans une plage choisie, p. ex. un tarif de nuit\nNouvelles commandes pour démarrer/arrêter la recharge (non autorisées sur toutes les voitures)",
+        "it": "Ricarica programmata: l'auto ricarica solo in una fascia scelta, ad es. una tariffa notturna\nNuovi comandi per avviare/fermare la ricarica (non consentiti su tutte le auto)",
+        "es": "Carga programada: el coche carga solo en una franja elegida, p. ej. una tarifa nocturna\nNuevos comandos para iniciar/detener la carga (no permitidos en todos los coches)",
+        "pl": "Ładowanie według harmonogramu: auto ładuje się tylko w wybranym oknie czasowym, np. w taryfie nocnej\nNowe polecenia uruchamiania/zatrzymywania ładowania (nie na każdym aucie dozwolone)",
+        "uk": "Заряджання за розкладом: авто заряджається лише у вибраний час, наприклад за нічним тарифом\nНові команди запуску/зупинки заряджання (дозволені не на всіх авто)",
+        "zh-cn": "定时充电：车辆仅在选定的时间段充电，例如夜间电价时段\n新增开始/停止充电命令（并非所有车辆都允许）"
+      },
       "0.4.0": {
         "en": "New fuel states for hybrid/combustion cars and a find-car (flash lights) command\nNew setting to show range, odometer and speed in miles\nRefusals that are not a wrong PIN (car busy, asleep, no permission) no longer count towards the PIN lockout\nMore reliable session: tokens renewed before they expire, rejected tokens not resent, network errors no longer ask for a new OTP\nFixed wrong battery level/range from placeholder readings, total range drops, stale charging power and climate run time",
         "de": "Neue Kraftstoff-Zustände für Hybrid-/Verbrennerfahrzeuge und ein Befehl „Auto finden“ (Lichter blinken)\nNeue Einstellung, um Reichweite, Kilometerstand und Geschwindigkeit in Meilen anzuzeigen\nAblehnungen, die keine falsche PIN sind (Auto beschäftigt, im Ruhezustand, keine Berechtigung), zählen nicht mehr zur PIN-Sperre\nZuverlässigere Sitzung: Tokens werden vor Ablauf erneuert, abgelehnte Tokens nicht erneut gesendet, Netzwerkfehler verlangen keinen neuen OTP mehr\nBehoben: falscher Akkustand/Reichweite durch Platzhalterwerte, Einbrüche der Gesamtreichweite, veraltete Ladeleistung und Klimalaufzeit",

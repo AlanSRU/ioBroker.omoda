@@ -97,6 +97,8 @@ class Omoda extends utils.Adapter {
 
         this.subscribeStates('*.commands.*');
         this.subscribeStates('*.climate.targetTemperature');
+        this.subscribeStates('*.charging.scheduleStart');
+        this.subscribeStates('*.charging.scheduleDuration');
 
         await this.tokens.load();
         if (!this.tokens.hasToken()) {
@@ -229,6 +231,17 @@ class Omoda extends utils.Adapter {
                     }
                     void this.setState(id, { val: false, ack: true });
                     break;
+                case 'commands.chargeSchedule': {
+                    const start = await this.getStateAsync(`${ctrl.id}.charging.scheduleStart`);
+                    const dur = await this.getStateAsync(`${ctrl.id}.charging.scheduleDuration`);
+                    result = await ctrl.chargeSchedule(
+                        Boolean(state.val),
+                        typeof start?.val === 'string' ? start.val : '00:00',
+                        typeof dur?.val === 'number' ? dur.val : 420,
+                    );
+                    void this.setState(id, { val: Boolean(state.val), ack: true });
+                    break;
+                }
                 case 'commands.locate':
                     if (state.val) {
                         result = await ctrl.locate();
@@ -249,7 +262,9 @@ class Omoda extends utils.Adapter {
                     void this.setState(id, { val: false, ack: true });
                     break;
                 case 'climate.targetTemperature':
-                    // Setpoint only — applied on the next climate ON.
+                case 'charging.scheduleStart':
+                case 'charging.scheduleDuration':
+                    // Setpoints only — applied on the next climate ON / chargeSchedule.
                     void this.setState(id, { val: state.val, ack: true });
                     return;
                 default:

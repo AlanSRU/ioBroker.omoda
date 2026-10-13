@@ -114,6 +114,31 @@ export const STATES: StateDef[] = [
         id: 'charging.remainingTime',
         common: { name: 'Charge remaining time', type: 'number', role: 'value', unit: 'min', ...ro() },
     },
+    {
+        id: 'charging.scheduleStart',
+        common: {
+            name: 'Scheduled charging start (HH:MM, local) — applied on the next commands.chargeSchedule',
+            type: 'string',
+            role: 'text',
+            read: true,
+            write: true,
+            def: '00:00',
+        },
+    },
+    {
+        id: 'charging.scheduleDuration',
+        common: {
+            name: 'Scheduled charging duration — applied on the next commands.chargeSchedule',
+            type: 'number',
+            role: 'level.timer',
+            unit: 'min',
+            read: true,
+            write: true,
+            min: 1,
+            max: 1440,
+            def: 420,
+        },
+    },
 
     // — doors & locks —
     // — fuel (realtime; not created on a confirmed BEV, see ensureObjects) —
@@ -262,6 +287,17 @@ export const STATES: StateDef[] = [
     {
         id: 'commands.chargeStop',
         common: { name: 'Stop charging', type: 'boolean', role: 'button', read: false, write: true },
+    },
+    {
+        id: 'commands.chargeSchedule',
+        common: {
+            name: 'Scheduled charging on/off (writing true again re-sends the start/duration)',
+            type: 'boolean',
+            role: 'switch',
+            read: true,
+            write: true,
+            def: false,
+        },
     },
     {
         id: 'commands.locate',

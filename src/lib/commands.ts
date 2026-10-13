@@ -46,8 +46,8 @@ interface CommandDef {
 
 /**
  * Full catalog (ported 1:1). Only `sblocca`/`blocca`, `clima_on`/`clima_off`, `ricarica_start`/`ricarica_stop`,
- * `locate_car` and `find_car` are reachable today — via VehicleController.lock/climate/charge/locate/findCar
- * and their writable states. Every
+ * `ricarica_prog_on`/`ricarica_prog_off`, `locate_car` and `find_car` are reachable today — via
+ * VehicleController.lock/climate/charge/chargeSchedule/locate/findCar and their writable states. Every
  * entry marked "future" below is a verified endpoint recipe kept for a later release; it is
  * intentionally not dead code, just not yet exposed as a state.
  */
@@ -113,6 +113,32 @@ export const COMMAND_CATALOG: Record<string, CommandDef> = {
         endpoint: 'chargeStartStopControl',
         body: { controlType: '0' },
         name: 'Stop charging',
+        group: 'Charging',
+    },
+    // Scheduled charging: body carries a NESTED plan array (signed via flattenValue). The plan is
+    // supplied per send through `params`; these bodies are upstream's defaults. cycleData must be
+    // all seven days — a custom cycle is a separate permission (upstream: [1,3,5] → A00084).
+    // startTime = minutes after LOCAL midnight, timeConsuming = minutes.
+    ricarica_prog_on: {
+        endpoint: 'chargeAppointControl',
+        body: {
+            mainSwitch: 1,
+            chargeAppointPlans: [
+                { cycleData: [1, 2, 3, 4, 5, 6, 7], startTime: 480, switchStatus: 1, timeConsuming: 360 },
+            ],
+        },
+        name: 'Scheduled charging ON',
+        group: 'Charging',
+    },
+    ricarica_prog_off: {
+        endpoint: 'chargeAppointControl',
+        body: {
+            mainSwitch: 0,
+            chargeAppointPlans: [
+                { cycleData: [1, 2, 3, 4, 5, 6, 7], startTime: 480, switchStatus: 0, timeConsuming: 360 },
+            ],
+        },
+        name: 'Scheduled charging OFF',
         group: 'Charging',
     },
     // Other

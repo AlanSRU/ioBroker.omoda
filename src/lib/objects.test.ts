@@ -37,6 +37,7 @@ const ROLE_RULES: Record<string, RoleRule> = {
     'info.model': { types: ['string'], read: true, write: false },
     'info.name': { types: ['string'], read: true },
     'level.temperature': { types: ['number'], read: true, write: true },
+    'level.timer': { types: ['number'], read: true, write: true },
     'sensor.door': { types: ['boolean'], read: true, write: false },
     'sensor.window': { types: ['boolean'], read: true, write: false },
     switch: { types: ['boolean'], read: true, write: true },

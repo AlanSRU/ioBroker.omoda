@@ -194,6 +194,19 @@ describe('commands/CommandRunner', () => {
         }
     });
 
+    it('sends a scheduled-charging plan as a nested array, overriding the catalog default', async () => {
+        const fc = new FakeClient();
+        fc.checkPasswordQueue = [{ data: { taskId: 'T1' } }];
+        fc.tspQueue = [{ status: 200, code: 'A00079', json: {} }];
+        const plan = { cycleData: [1, 2, 3, 4, 5, 6, 7], startTime: 1290, switchStatus: 1, timeConsuming: 570 };
+        await runner(fc).send('ricarica_prog_on', { mainSwitch: 1, chargeAppointPlans: [plan] });
+        const { path, body } = fc.tspCalls[0];
+        expect(path).to.match(/\/asc\/vehicleControl\/chargeAppointControl$/);
+        expect(body.mainSwitch).to.equal(1);
+        expect(body.chargeAppointPlans).to.deep.equal([plan]);
+        expect(body).to.include({ taskId: 'T1', vin: 'VIN1' });
+    });
+
     it('refuses to mint with an empty PIN', async () => {
         const fc = new FakeClient();
         const r = new CommandRunner(

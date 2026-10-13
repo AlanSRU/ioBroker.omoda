@@ -1,7 +1,7 @@
 /*
  * controller.ts — per-VIN runtime: owns the MQTT telemetry client, the REST probe/wake,
  * the polling timers, and the command runner. The ioBroker equivalent of coordinator.py,
- * condensed for the MVP scope (read-only telemetry + lock + climate + charge + locate + find car + refresh).
+ * condensed for the MVP scope (read-only telemetry + lock + climate + charge + charge schedule + locate + find car + refresh).
  *
  * Timers use the adapter's framework-managed setInterval/setTimeout so they are tracked and
  * cleared on unload; stop() also clears them explicitly and closes MQTT.
@@ -415,6 +415,31 @@ export class VehicleController {
             this.startFollow(true);
         }
         return out;
+    }
+
+    /**
+     * Turn the car's charging schedule on (every day, from `start` for `durationMin`) or off.
+     *
+     * @param on
+     * @param start - 'HH:MM', local time
+     * @param durationMin
+     */
+    async chargeSchedule(on: boolean, start: string, durationMin: number): Promise<string> {
+        const m = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(start.trim());
+        if (on && !m) {
+            throw new CommandError(`Scheduled charging: start time '${start}' is not HH:MM`, null, 'config');
+        }
+        const plan = {
+            cycleData: [1, 2, 3, 4, 5, 6, 7],
+            startTime: m ? Number(m[1]) * 60 + Number(m[2]) : 0,
+            switchStatus: on ? 1 : 0,
+            // The state's min/max only guide UIs — a script can still write anything, so clamp here.
+            timeConsuming: Math.min(1440, Math.max(1, Math.round(durationMin))),
+        };
+        return this.cmd.send(on ? 'ricarica_prog_on' : 'ricarica_prog_off', {
+            mainSwitch: on ? 1 : 0,
+            chargeAppointPlans: [plan],
+        });
     }
 
     async locate(): Promise<string> {

@@ -89,6 +89,22 @@ describe('crypto/sign — TSP', () => {
         const expected = createHash('sha256').update(base, 'utf-8').digest('base64').toUpperCase();
         expect(sign).to.equal(expected);
     });
+
+    it('signs a full scheduled-charging body exactly as upstream tsp_sign.build_sign does', () => {
+        // Expected value computed by running upstream omoda9-ha core/tsp_sign.py on this same body.
+        const params = {
+            mainSwitch: 1,
+            chargeAppointPlans: [
+                { cycleData: [1, 2, 3, 4, 5, 6, 7], startTime: 1290, switchStatus: 1, timeConsuming: 570 },
+            ],
+            clientType: '1',
+            seq: 'VIN1-1700000000000',
+            taskId: 'T1',
+            vin: 'VIN1',
+            appId: 'eu-1',
+        };
+        expect(tspBuildSign(params, 1700000000000)).to.equal('JGAD4XZBTVWPN992MPAOVEASDHXKTJIMHKPK5HCMPVI=');
+    });
 });
 
 describe('crypto/aes — captcha ECB', () => {
