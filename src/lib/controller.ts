@@ -10,7 +10,7 @@ import { EP, TIMING } from './constants';
 import { OmodaClient } from './client';
 import { MqttTelemetry } from './telemetry';
 import { clampTemperature, chooseAirDuration } from './climate';
-import { CommandRunner, CommandError } from './commands';
+import { CommandRunner, CommandError, schedulePlanParams } from './commands';
 import type { SignParams } from './crypto/sign';
 import type { CertSet } from './certs';
 import { DISTANCE_IDS, GEO_MAP, MQTT_MAP, RT_MAP, isDegradedFrame, totalRange, toDistanceUnit } from './objects';
@@ -425,24 +425,7 @@ export class VehicleController {
      * @param durationMin
      */
     async chargeSchedule(on: boolean, start: string, durationMin: number): Promise<string> {
-        const m = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(start.trim());
-        if (on && !m) {
-            throw new CommandError(`Scheduled charging: start time '${start}' is not HH:MM`, null, 'config');
-        }
-        if (on && !Number.isFinite(durationMin)) {
-            throw new CommandError('Scheduled charging: duration is not a number of minutes', null, 'config');
-        }
-        const plan = {
-            cycleData: [1, 2, 3, 4, 5, 6, 7],
-            startTime: m ? Number(m[1]) * 60 + Number(m[2]) : 0,
-            switchStatus: on ? 1 : 0,
-            // The state's min/max only guide UIs — a script can still write anything, so clamp here.
-            timeConsuming: Math.min(1440, Math.max(1, Math.round(durationMin))),
-        };
-        return this.cmd.send(on ? 'ricarica_prog_on' : 'ricarica_prog_off', {
-            mainSwitch: on ? 1 : 0,
-            chargeAppointPlans: [plan],
-        });
+        return this.cmd.send(on ? 'ricarica_prog_on' : 'ricarica_prog_off', schedulePlanParams(on, start, durationMin));
     }
 
     async locate(): Promise<string> {

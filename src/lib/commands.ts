@@ -146,6 +146,33 @@ export const COMMAND_CATALOG: Record<string, CommandDef> = {
     locate_car: { endpoint: 'vehicleLocation', body: {}, name: 'Locate car (GPS)', group: 'Other' },
 };
 
+/**
+ * chargeAppointControl params for scheduled charging ON (every day, from `start` for `durationMin`) or OFF.
+ * ON refuses an unusable start or duration; OFF never does — it needs neither, so a bad setpoint
+ * must not stop the user turning the schedule off.
+ *
+ * @param on
+ * @param start - 'HH:MM', local time
+ * @param durationMin
+ */
+export function schedulePlanParams(on: boolean, start: string, durationMin: number): SignParams {
+    const m = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(start.trim());
+    if (on && !m) {
+        throw new CommandError(`Scheduled charging: start time '${start}' is not HH:MM`, null, 'config');
+    }
+    if (on && !Number.isFinite(durationMin)) {
+        throw new CommandError('Scheduled charging: duration is not a number of minutes', null, 'config');
+    }
+    const plan = {
+        cycleData: [1, 2, 3, 4, 5, 6, 7],
+        startTime: m ? Number(m[1]) * 60 + Number(m[2]) : 0,
+        switchStatus: on ? 1 : 0,
+        // The state's min/max only guide UIs — a script can still write anything, so clamp here.
+        timeConsuming: Number.isFinite(durationMin) ? Math.min(1440, Math.max(1, Math.round(durationMin))) : 420,
+    };
+    return { mainSwitch: on ? 1 : 0, chargeAppointPlans: [plan] };
+}
+
 /** Session/token expiry — not the PIN's fault, so it must not count towards the lockout. */
 const SESSION_CODES = new Set(['A00000']);
 /**

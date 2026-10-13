@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { CommandRunner, CommandError } from './commands';
+import { CommandRunner, CommandError, schedulePlanParams } from './commands';
 import type { OmodaClient } from './client';
 import type { TspResult } from './types';
 
@@ -222,5 +222,45 @@ describe('commands/CommandRunner', () => {
             expect((e as CommandError).reason).to.equal('pin');
             expect(checkPwCount(fc)).to.equal(0);
         }
+    });
+});
+
+describe('commands/schedulePlanParams', () => {
+    const plan = (p: Record<string, unknown>): Record<string, unknown> =>
+        (p.chargeAppointPlans as Array<Record<string, unknown>>)[0];
+
+    it('builds an every-day plan in minutes after local midnight', () => {
+        const p = schedulePlanParams(true, '21:15', 585);
+        expect(p.mainSwitch).to.equal(1);
+        expect(plan(p)).to.deep.equal({
+            cycleData: [1, 2, 3, 4, 5, 6, 7],
+            startTime: 1275,
+            switchStatus: 1,
+            timeConsuming: 585,
+        });
+    });
+
+    it('clamps the duration to 1..1440', () => {
+        expect(plan(schedulePlanParams(true, '00:00', -5)).timeConsuming).to.equal(1);
+        expect(plan(schedulePlanParams(true, '00:00', 5000)).timeConsuming).to.equal(1440);
+    });
+
+    it('refuses an unusable start time or duration when turning ON', () => {
+        for (const [start, dur] of [
+            ['24:00', 60],
+            ['7:5', 60],
+            ['2130', 60],
+            ['00:00', NaN],
+            ['00:00', Infinity],
+        ] as const) {
+            expect(() => schedulePlanParams(true, start, dur), `${start} ${dur}`).to.throw(CommandError);
+        }
+    });
+
+    it('always allows OFF, whatever the setpoints hold', () => {
+        const p = schedulePlanParams(false, 'garbage', NaN);
+        expect(p.mainSwitch).to.equal(0);
+        expect(plan(p).switchStatus).to.equal(0);
+        expect(Number.isFinite(plan(p).timeConsuming)).to.equal(true);
     });
 });
