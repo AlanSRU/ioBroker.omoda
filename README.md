@@ -34,11 +34,12 @@ the official [Omoda / Jaecoo app](https://www.omoda.com/).
   consumption, low-fuel warning. The car reports litres, not a fuel-level percentage.
 - **Units** — ranges, odometer and speed in kilometres or miles (setting "Distance unit" on the
   "Region & polling" tab; default km).
-- **Commands** — lock/unlock, climate on/off with a settable target temperature, request GPS
-  location, find car (flash lights), and "wake & refresh full status".
+- **Commands** — lock/unlock, climate on/off with a settable target temperature, start/stop
+  EV charging (`commands.chargeStart` / `commands.chargeStop`; the plug must be connected),
+  request GPS location, find car (flash lights), and "wake & refresh full status".
 
 Additional functions from the vehicle app (individual seat heating/ventilation, defrosters,
-EV charge start/stop and scheduled charging, windows/sunroof/trunk control, theft alarm) are
+scheduled charging, windows/sunroof/trunk control, theft alarm) are
 planned for a later version.
 
 ### Requirements
@@ -93,6 +94,9 @@ integration has since moved to **[chery-connect-ha/omoda9-ha](https://github.com
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+* (Alan Paris) Added `commands.chargeStart` and `commands.chargeStop` to start or stop charging while the plug is connected. After either one, the car is re-read within about 2 minutes so `charging.state` and `charging.power` follow the change. Not every car allows remote charge control; a car that does not refuses with "command not allowed on this car"
+
 ### 0.4.0 (2026-10-04)
 * (Alan Paris) Added fuel states for hybrid/combustion cars: `fuel.remaining` (L), `fuel.range` (km), `fuel.averageConsumption` (L/100 km) and `fuel.lowWarning`. They are not created on a pure-electric car
 * (Alan Paris) Added `commands.findCar` — flashes the lights so you can find the car

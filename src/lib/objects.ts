@@ -256,6 +256,14 @@ export const STATES: StateDef[] = [
         common: { name: 'Climate on/off', type: 'boolean', role: 'switch', read: true, write: true, def: false },
     },
     {
+        id: 'commands.chargeStart',
+        common: { name: 'Start charging', type: 'boolean', role: 'button', read: false, write: true },
+    },
+    {
+        id: 'commands.chargeStop',
+        common: { name: 'Stop charging', type: 'boolean', role: 'button', read: false, write: true },
+    },
+    {
         id: 'commands.locate',
         common: { name: 'Request GPS location', type: 'boolean', role: 'button', read: false, write: true },
     },

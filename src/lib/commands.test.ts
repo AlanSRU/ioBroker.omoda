@@ -11,6 +11,7 @@ class FakeClient {
     bffCalls: string[] = [];
     checkPasswordQueue: Array<Record<string, unknown>> = [];
     tspQueue: TspResult[] = [];
+    tspCalls: Array<{ path: string; body: Record<string, unknown> }> = [];
 
     bffLogin(): Promise<{ userToken?: string; tUserId?: string }> {
         return Promise.resolve({ userToken: 'UT', tUserId: 'TU' });
@@ -22,7 +23,8 @@ class FakeClient {
         }
         return Promise.resolve({});
     }
-    signedTspPost(): Promise<TspResult> {
+    signedTspPost(_token: string, path: string, body: Record<string, unknown>): Promise<TspResult> {
+        this.tspCalls.push({ path, body });
         return Promise.resolve(this.tspQueue.shift() ?? { status: 200, code: '000000', json: {} });
     }
 }
@@ -156,6 +158,40 @@ describe('commands/CommandRunner', () => {
         expect(third.toLowerCase()).to.contain('blocked');
         // Only 2 checkPassword round-trips reached the backend; the 3rd was blocked locally.
         expect(checkPwCount(fc)).to.equal(2);
+    });
+
+    for (const [key, controlType, name] of [
+        ['ricarica_start', '1', 'Start charging'],
+        ['ricarica_stop', '0', 'Stop charging'],
+    ]) {
+        it(`sends ${key} to chargeStartStopControl with controlType ${controlType}`, async () => {
+            const fc = new FakeClient();
+            fc.checkPasswordQueue = [{ data: { taskId: 'T1' } }];
+            fc.tspQueue = [{ status: 200, code: 'A00079', json: {} }];
+            const out = await runner(fc).send(key);
+            expect(fc.tspCalls).to.have.length(1);
+            const { path, body } = fc.tspCalls[0];
+            expect(path).to.match(/\/asc\/vehicleControl\/chargeStartStopControl$/);
+            expect(body).to.include({ controlType, taskId: 'T1', vin: 'VIN1', clientType: '1' });
+            expect(out).to.contain(name);
+        });
+    }
+
+    it('reports a charge command the car refuses (A00084, A00082) as a non-PIN CommandError', async () => {
+        for (const code of ['A00084', 'A00082']) {
+            const fc = new FakeClient();
+            fc.checkPasswordQueue = [{ data: { taskId: 'T1' } }];
+            fc.tspQueue = [{ status: 200, code, json: { code } }];
+            try {
+                await runner(fc).send('ricarica_stop');
+                expect.fail('expected CommandError');
+            } catch (e) {
+                expect(e).to.be.instanceOf(CommandError);
+                expect((e as CommandError).code, code).to.equal(code);
+                expect((e as CommandError).reason, code).to.equal(null);
+                expect((e as Error).message).to.contain('Stop charging');
+            }
+        }
     });
 
     it('refuses to mint with an empty PIN', async () => {

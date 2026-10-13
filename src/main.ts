@@ -222,6 +222,13 @@ class Omoda extends utils.Adapter {
                     void this.setState(id, { val: Boolean(state.val), ack: true });
                     break;
                 }
+                case 'commands.chargeStart':
+                case 'commands.chargeStop':
+                    if (state.val) {
+                        result = await ctrl.charge(rel === 'commands.chargeStart');
+                    }
+                    void this.setState(id, { val: false, ack: true });
+                    break;
                 case 'commands.locate':
                     if (state.val) {
                         result = await ctrl.locate();
