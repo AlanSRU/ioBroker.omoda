@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "omoda",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "news": {
       "0.5.0": {
         "en": "Scheduled charging: let the car charge only in a chosen window, e.g. a night tariff\nNew start/stop charging commands (not allowed on every car)",

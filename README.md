@@ -107,7 +107,7 @@ integration has since moved to **[chery-connect-ha/omoda9-ha](https://github.com
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.5.0 (2026-10-13)
 * (Alan Paris) Added scheduled charging: `charging.scheduleStart`, `charging.scheduleDuration` and `commands.chargeSchedule`, so the car charges only in a chosen window, for example on a night tariff. See "Charging control" above
 * (Alan Paris) Added `commands.chargeStart` and `commands.chargeStop` to start or stop charging while the plug is connected. After either one, the car is re-read within about 2 minutes so `charging.state` and `charging.power` follow the change. Not every car allows this; a car that does not refuses with "command not allowed on this car"
 
@@ -159,9 +159,6 @@ integration has since moved to **[chery-connect-ha/omoda9-ha](https://github.com
 * (Alan Paris) Config: clearer "Dept ID" help — it must match your account country's dialing code (UK=44, IT=39, …)
 * (Alan Paris) Require Node.js >= 22 and admin >= 7.6.17; enabled automated npm publishing via trusted publishing (OIDC)
 * (Alan Paris) Marked the OTP code as protected; various adapter-checker compliance fixes
-
-### 0.1.0 (2026-07-18)
-* (Alan Paris) initial release
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
