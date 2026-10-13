@@ -14,6 +14,22 @@ import { ensureObjects } from './lib/objects';
 import type { RuntimeConfig } from './lib/types';
 import { clamp, mask, str } from './lib/util';
 
+/**
+ * Duration setpoint → minutes. A number or a numeric string converts; nothing set means the default.
+ * Anything else ('' or true, which Number() would turn into 0 or 1) is NaN, which chargeSchedule refuses.
+ *
+ * @param v
+ */
+function scheduleMinutes(v: ioBroker.StateValue | undefined): number {
+    if (v == null) {
+        return 420;
+    }
+    if (typeof v === 'number' || (typeof v === 'string' && v.trim() !== '')) {
+        return Number(v);
+    }
+    return NaN;
+}
+
 class Omoda extends utils.Adapter {
     private client!: OmodaClient;
     private tokens!: TokenStore;
@@ -234,10 +250,13 @@ class Omoda extends utils.Adapter {
                 case 'commands.chargeSchedule': {
                     const start = await this.getStateAsync(`${ctrl.id}.charging.scheduleStart`);
                     const dur = await this.getStateAsync(`${ctrl.id}.charging.scheduleDuration`);
+                    // Convert, don't substitute: a script may write '60' or 2130, and silently sending
+                    // the defaults instead would program a window the user never set. chargeSchedule
+                    // validates the converted values and refuses anything unusable.
                     result = await ctrl.chargeSchedule(
                         Boolean(state.val),
-                        typeof start?.val === 'string' ? start.val : '00:00',
-                        typeof dur?.val === 'number' ? dur.val : 420,
+                        start?.val == null ? '00:00' : String(start.val),
+                        scheduleMinutes(dur?.val),
                     );
                     void this.setState(id, { val: Boolean(state.val), ack: true });
                     break;

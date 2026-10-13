@@ -429,6 +429,9 @@ export class VehicleController {
         if (on && !m) {
             throw new CommandError(`Scheduled charging: start time '${start}' is not HH:MM`, null, 'config');
         }
+        if (on && !Number.isFinite(durationMin)) {
+            throw new CommandError('Scheduled charging: duration is not a number of minutes', null, 'config');
+        }
         const plan = {
             cycleData: [1, 2, 3, 4, 5, 6, 7],
             startTime: m ? Number(m[1]) * 60 + Number(m[2]) : 0,
